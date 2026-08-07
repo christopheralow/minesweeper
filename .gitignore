@@ -1,0 +1,22 @@
+# Compiled output
+*.o
+*.out
+*.exe
+a.out
+main
+
+# Compiled binary
+connect4
+
+# Build folders
+build/
+bin/
+
+# macOS
+.DS_Store
+
+# Editor
+.vscode/
+
+# Debug symbols
+*.dSYM/
