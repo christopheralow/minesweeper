@@ -24,13 +24,8 @@ void PrintBoard(const char board[SML][SML]) {
                 else if (board[r][c] == 'F') {
                     cout << "F "; 
                 }
-                // Needs -> || board[r][c] == '*' but ommitted for testing
-                else if (board[r][c] == '#') {
+                else if (board[r][c] == '#' || board[r][c] == '*') {
                     cout << "# ";
-                }
-                // For testing only
-                else if (board[r][c] == '*') {
-                    cout << "* ";
                 }
                 // NOTE: Need to build and cout number of nearby mines logic
         }
@@ -51,24 +46,51 @@ void DeployMines(char board[SML][SML]) {
             minePlaced++;
         }
     }
-    cout << "\nMines placed: " << minePlaced << " (expected " << MINES_SML << ")\n"; //test
     // NOTE: Must add a check to prevent first turn loss
+}
+
+bool IsMine(const char board[SML][SML], int row, int col) {
+    bool mineFound = false;
+    
+    // Prevent checking outside range of board
+    if (row < 0 || row >= SML || col < 0 || col >= SML) {
+        mineFound = false;
+    }
+    else if (board[row][col] == '*') {
+        mineFound = true;
+    }
+
+    return mineFound;
+    // NOTE: bit redundant on the statement here could use logic refactor later
+}
+
+void GetCellVal(char board[SML][SML]) {
+    for (int r = 0; r < SML; r++) {
+        for (int c = 0; c < SML; c++) {
+            // Skip '*' cells
+            if (board[r][c] == '*') {
+                continue;
+            } 
+            // Sum of 8 bool statments makes cell value
+            int cellVal = IsMine(board, r - 1, c - 1) + IsMine(board, r - 1, c + 0)
+                        + IsMine(board, r - 1, c + 1) + IsMine(board, r + 0, c - 1)
+                        + IsMine(board, r + 0, c + 1) + IsMine(board, r + 1, c - 1)
+                        + IsMine(board, r + 1, c - 0) + IsMine(board, r + 1, c + 1);
+            board[r][c] = cellVal;
+        }
+    } 
 }
 
 int main() {
 
     srand(time(0)); // for mine placement
-
     char gridBoard[SML][SML];
-
+    
     for (int r = 0; r < SML; r++) {
         for (int c = 0; c < SML; c++) {
         gridBoard[r][c] = '#';
         }
     }
-
-    DeployMines(gridBoard);
-    PrintBoard(gridBoard);
     
     return 0;
 
