@@ -27,6 +27,9 @@ void PrintBoard(const char board[SML][SML]) {
                 else if (board[r][c] == '#' || board[r][c] == '*') {
                     cout << "# ";
                 }
+                else {
+                    cout << board[r][c] << " ";
+                }
                 // NOTE: Need to build and cout number of nearby mines logic
         }
         cout << "\n";
@@ -76,21 +79,34 @@ void GetCellVal(char board[SML][SML]) {
                         + IsMine(board, r - 1, c + 1) + IsMine(board, r + 0, c - 1)
                         + IsMine(board, r + 0, c + 1) + IsMine(board, r + 1, c - 1)
                         + IsMine(board, r + 1, c - 0) + IsMine(board, r + 1, c + 1);
-            board[r][c] = cellVal;
+            board[r][c] = char('0' + cellVal);
         }
     } 
+}
+
+void PlayGame(char board[SML][SML]) {
+
+    PrintBoard(board);
+    DeployMines(board);
+    GetCellVal(board);
+    PrintBoard(board);
+
+    //PlayerTurn;
 }
 
 int main() {
 
     srand(time(0)); // for mine placement
-    char gridBoard[SML][SML];
-    
+    char initGrid[SML][SML];
+     
+    // Initialize Board
     for (int r = 0; r < SML; r++) {
         for (int c = 0; c < SML; c++) {
-        gridBoard[r][c] = '#';
+        initGrid[r][c] = '#';
         }
     }
+    PlayGame(initGrid);
+
     
     return 0;
 
