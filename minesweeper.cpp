@@ -8,8 +8,7 @@ using namespace std;
 const int SML = 9;
 const int MINES_SML = 10;
 
-void PrintBoard(const char board[SML][SML], const int turnCounter) {
-    cout << "Turn " << turnCounter << endl;
+void PrintBoard(const char board[SML][SML]) {
     cout << "  ";
     for (int n = 0; n < SML; n++) {
         cout << n + 1 << " ";
@@ -83,7 +82,7 @@ void GetCellVal(char board[SML][SML]) {
     } 
 }
 
-void PlayerTurn(char board[SML][SML], int& turnCounter) {
+void PlayerTurn(char board[SML][SML]) {
     char userRow;
     int userCol;
 
@@ -94,7 +93,6 @@ void PlayerTurn(char board[SML][SML], int& turnCounter) {
 
     int rowIndex = userRow - 'A';
     board[rowIndex][userCol] = '0';
-    turnCounter++;
 
 }
 
@@ -102,15 +100,15 @@ void PlayGame(char board[SML][SML]) {
     int turnCounter = 0;
     bool gameOver = false;
 
-    PrintBoard(board, turnCounter);
-    PlayerTurn(board, turnCounter);
+    PrintBoard(board);
+    PlayerTurn(board);
     DeployMines(board);
     GetCellVal(board);
-    PrintBoard(board, turnCounter);
+    PrintBoard(board);
     
     while (!gameOver) {
-        PlayerTurn(board, turnCounter);
-        PrintBoard(board, turnCounter);
+        PlayerTurn(board);
+        PrintBoard(board);
         //gameOver = CheckLoss()
             //if gameOver
                 //break
