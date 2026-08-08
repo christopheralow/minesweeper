@@ -37,30 +37,31 @@ void PrintBoard(const char board[SML][SML]) {
     }
 }
 
-void DeployMines(char board[SML][SML]) {
-    int minePlaced = 0;
 
-    while (minePlaced < MINES_SML) {
+void DeployMines(char hiddenBoard[SML][SML]) {
+    int numMinesPlaced = 0;
+
+    while (numMinesPlaced < MINES_SML) {
         // Select a random row and column 
         int row = rand() % SML;
         int col = rand() % SML;
         // Check cell status and drop a mine
-        if (board[row][col] != '*' && board[row][col] != '0') {
-            board[row][col] = '*'; 
-            minePlaced++;
+        if (hiddenBoard[row][col] != '*') {
+            hiddenBoard[row][col] = '*'; 
+            numMinesPlaced++;
         }
     }
     // NOTE: Must add a check to prevent first turn loss
 }
 
-bool IsMine(const char board[SML][SML], int row, int col) {
+bool IsMine(const char hiddenBoard[SML][SML], int row, int col) {
     bool mineFound = false;
     
     // Prevent checking outside range of board
     if (row < 0 || row >= SML || col < 0 || col >= SML) {
         mineFound = false;
     }
-    else if (board[row][col] == '*') {
+    else if (hiddenBoard[row][col] == '*') {
         mineFound = true;
     }
 
@@ -68,19 +69,19 @@ bool IsMine(const char board[SML][SML], int row, int col) {
     // NOTE: bit redundant on the statement here could use logic refactor later
 }
 
-void GetCellVal(char board[SML][SML]) {
+void GetCellVal(char hiddenBoard[SML][SML]) {
     for (int r = 0; r < SML; r++) {
         for (int c = 0; c < SML; c++) {
             // Skip '*' cells
-            if (board[r][c] == '*') {
+            if (hiddenBoard[r][c] == '*') {
                 continue;
             } 
             // Sum of 8 bool statments makes cell value
-            int cellVal = IsMine(board, r - 1, c - 1) + IsMine(board, r - 1, c + 0)
-                        + IsMine(board, r - 1, c + 1) + IsMine(board, r + 0, c - 1)
-                        + IsMine(board, r + 0, c + 1) + IsMine(board, r + 1, c - 1)
-                        + IsMine(board, r + 1, c - 0) + IsMine(board, r + 1, c + 1);
-            board[r][c] = char('0' + cellVal);
+            int cellVal = IsMine(hiddenBoard, r - 1, c - 1) + IsMine(hiddenBoard, r - 1, c + 0)
+                        + IsMine(hiddenBoard, r - 1, c + 1) + IsMine(hiddenBoard, r + 0, c - 1)
+                        + IsMine(hiddenBoard, r + 0, c + 1) + IsMine(hiddenBoard, r + 1, c - 1)
+                        + IsMine(hiddenBoard, r + 1, c - 0) + IsMine(hiddenBoard, r + 1, c + 1);
+            hiddenBoard[r][c] = char('0' + cellVal);
         }
     } 
 }
@@ -99,19 +100,19 @@ void PlayerTurn(char board[SML][SML]) {
 
 }
 
-void PlayGame(char board[SML][SML]) {
+void PlayGame(char hiddenBoard[SML][SML]) {
     int turnCounter = 0;
     bool gameOver = false;
 
-    PrintBoard(board);
-    PlayerTurn(board);
-    DeployMines(board);
-    GetCellVal(board);
-    PrintBoard(board);
+    PrintBoard(hiddenBoard);
+    PlayerTurn(hiddenBoard);
+    DeployMines(hiddenBoard);
+    GetCellVal(hiddenBoard);
+    PrintBoard(hiddenBoard);
     
     while (!gameOver) {
-        PlayerTurn(board);
-        PrintBoard(board);
+        PlayerTurn(hiddenBoard);
+        PrintBoard(hiddenBoard);
         //gameOver = CheckLoss()
             //if gameOver
                 //break
@@ -125,15 +126,21 @@ void PlayGame(char board[SML][SML]) {
 int main() {
 
     srand(time(0)); // for mine placement
-    char initGrid[SML][SML];
+    char displayGrid[SML][SML];
+    char actualGrid[SML][SML];
      
     // Initialize Board
     for (int r = 0; r < SML; r++) {
         for (int c = 0; c < SML; c++) {
-        initGrid[r][c] = '#';
+        displayGrid[r][c] = '#';
         }
     }
-    PlayGame(initGrid);
+    for (int r = 0; r < SML; r++) {
+        for (int c = 0; c < SML; c++) {
+        actualGrid[r][c] = '0';
+        }
+    }
+    PlayGame(actualGrid);
 
     
     return 0;
