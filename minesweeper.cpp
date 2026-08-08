@@ -8,7 +8,8 @@ using namespace std;
 const int SML = 9;
 const int MINES_SML = 10;
 
-void PrintBoard(const char board[SML][SML]) {
+void PrintBoard(const char board[SML][SML], const int turnCounter) {
+    cout << "Turn " << turnCounter << endl;
     cout << "  ";
     for (int n = 0; n < SML; n++) {
         cout << n + 1 << " ";
@@ -18,19 +19,17 @@ void PrintBoard(const char board[SML][SML]) {
     for (int r = 0; r < SML; r++) {
         cout << char('A' + r) << " ";
         for (int c = 0; c < SML; c++) {
-                if (board[r][c] == '0') {
-                    cout << "  ";
-                }
-                else if (board[r][c] == 'F') {
-                    cout << "F "; 
-                }
-                else if (board[r][c] == '#' || board[r][c] == '*') {
-                    cout << "# ";
-                }
-                else {
-                    cout << board[r][c] << " ";
-                }
-                // NOTE: Need to build and cout number of nearby mines logic
+            if (board[r][c] == '0') {
+                cout << "  ";
+            }
+            else if (board[r][c] == 'F') {
+                cout << "F "; 
+            }
+            else if (board[r][c] == '#' || board[r][c] == '*') {
+                cout << "# ";
+            }
+            
+            // NOTE: Need to build and cout number of nearby mines logic
         }
         cout << "\n";
     }
@@ -84,13 +83,41 @@ void GetCellVal(char board[SML][SML]) {
     } 
 }
 
-void PlayGame(char board[SML][SML]) {
+void PlayerTurn(char board[SML][SML], int& turnCounter) {
+    char userRow;
+    int userCol;
 
-    PrintBoard(board);
+    cout << "Select a row: ";
+    cin >> userRow;
+    cout << "Select a column: ";
+    cin >> userCol;
+
+    int rowIndex = userRow - 'A';
+    board[rowIndex][userCol] = '0';
+    turnCounter++;
+
+}
+
+void PlayGame(char board[SML][SML]) {
+    int turnCounter = 0;
+    bool gameOver = false;
+
+    PrintBoard(board, turnCounter);
+    PlayerTurn(board, turnCounter);
     DeployMines(board);
     GetCellVal(board);
-    PrintBoard(board);
-
+    PrintBoard(board, turnCounter);
+    
+    while (!gameOver) {
+        PlayerTurn(board, turnCounter);
+        PrintBoard(board, turnCounter);
+        //gameOver = CheckLoss()
+            //if gameOver
+                //break
+        //gameOver = CheckWin()
+            //if gameOver
+                //break
+    }       
     //PlayerTurn;
 }
 
