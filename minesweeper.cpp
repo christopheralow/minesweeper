@@ -21,11 +21,11 @@ void PrintBoard(const char board[SML][SML]) {
             if (board[r][c] == '0') {
                 cout << "  ";
             }
+            else if (board[r][c] == 'F') {
+                cout << "F ";
+            }
             else if (board[r][c] >= '1' && board [r][c] <= '8') {
                 cout << board[r][c] << " ";
-            }
-            else if (board[r][c] == 'F') {
-                cout << "F "; 
             }
             else if (board[r][c] == '#' || board[r][c] == '*') {
                 cout << "# ";
