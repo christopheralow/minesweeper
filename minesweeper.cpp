@@ -8,7 +8,8 @@ using namespace std;
 const int SML = 9;
 const int MINES_SML = 10;
 
-void PrintBoard(const char board[SML][SML]) {
+void PrintBoard(const char displayBoard[SML][SML]) {
+
     cout << "  ";
     for (int n = 0; n < SML; n++) {
         cout << n + 1 << " ";
@@ -18,16 +19,16 @@ void PrintBoard(const char board[SML][SML]) {
     for (int r = 0; r < SML; r++) {
         cout << char('A' + r) << " ";
         for (int c = 0; c < SML; c++) {
-            if (board[r][c] == '0') {
+            if (displayBoard[r][c] == '0') {
                 cout << "  ";
             }
-            else if (board[r][c] == 'F') {
+            else if (displayBoard[r][c] == 'F') {
                 cout << "F ";
             }
-            else if (board[r][c] >= '1' && board [r][c] <= '8') {
-                cout << board[r][c] << " ";
+            else if (displayBoard[r][c] >= '1' && displayBoard [r][c] <= '8') {
+                cout << displayBoard[r][c] << " ";
             }
-            else if (board[r][c] == '#' || board[r][c] == '*') {
+            else if (displayBoard[r][c] == '#' || displayBoard[r][c] == '*') {
                 cout << "# ";
             }
             
@@ -86,7 +87,7 @@ void GetCellVal(char hiddenBoard[SML][SML]) {
     } 
 }
 
-void PlayerTurn(char board[SML][SML]) {
+void PlayerTurn(char displayBoard[SML][SML], const char hiddenBoard [SML][SML]) {
     char userRow;
     int userCol;
 
@@ -96,23 +97,23 @@ void PlayerTurn(char board[SML][SML]) {
     cin >> userCol;
 
     int rowIndex = userRow - 'A';
-    board[rowIndex][userCol] = '0';
+    displayBoard[rowIndex][userCol] = hiddenBoard[rowIndex][userCol];
 
 }
 
-void PlayGame(char hiddenBoard[SML][SML]) {
+void PlayGame(char displayBoard[SML][SML], char hiddenBoard[SML][SML]) {
     int turnCounter = 0;
     bool gameOver = false;
 
-    PrintBoard(hiddenBoard);
-    PlayerTurn(hiddenBoard);
+    PrintBoard(displayBoard);
+    PlayerTurn(displayBoard, hiddenBoard);
     DeployMines(hiddenBoard);
     GetCellVal(hiddenBoard);
-    PrintBoard(hiddenBoard);
+    PrintBoard(displayBoard);
     
     while (!gameOver) {
-        PlayerTurn(hiddenBoard);
-        PrintBoard(hiddenBoard);
+        PlayerTurn(displayBoard, hiddenBoard);
+        PrintBoard(displayBoard);
         //gameOver = CheckLoss()
             //if gameOver
                 //break
@@ -140,7 +141,7 @@ int main() {
         actualGrid[r][c] = '0';
         }
     }
-    PlayGame(actualGrid);
+    PlayGame(displayGrid, actualGrid);
 
     
     return 0;
