@@ -31,13 +31,12 @@ void PrintBoard(const char displayBoard[SML][SML]) {
             else if (displayBoard[r][c] == '#' || displayBoard[r][c] == '*') {
                 cout << "# ";
             }
-            
-            // NOTE: Need to build and cout number of nearby mines logic
         }
         cout << "\n";
     }
 }
 
+// Randomly assigns mines to actual Grid
 void DeployMines(char hiddenBoard[SML][SML]) {
     int numMinesPlaced = 0;
 
@@ -54,6 +53,7 @@ void DeployMines(char hiddenBoard[SML][SML]) {
     // NOTE: Must add a check to prevent first turn loss
 }
 
+// For use inside GetCellVal to check for mines within the area of the actual Grid
 bool IsMine(const char hiddenBoard[SML][SML], int row, int col) {
     bool mineFound = false;
     
@@ -69,6 +69,7 @@ bool IsMine(const char hiddenBoard[SML][SML], int row, int col) {
     // NOTE: bit redundant on the statement here could use logic refactor later
 }
 
+// Determines value of cells based on neighboring mines and assigns value on actual Grid
 void GetCellVal(char hiddenBoard[SML][SML]) {
     for (int r = 0; r < SML; r++) {
         for (int c = 0; c < SML; c++) {
@@ -81,6 +82,8 @@ void GetCellVal(char hiddenBoard[SML][SML]) {
                         + IsMine(hiddenBoard, r - 1, c + 1) + IsMine(hiddenBoard, r + 0, c - 1)
                         + IsMine(hiddenBoard, r + 0, c + 1) + IsMine(hiddenBoard, r + 1, c - 1)
                         + IsMine(hiddenBoard, r + 1, c - 0) + IsMine(hiddenBoard, r + 1, c + 1);
+
+            // Int -> Char
             hiddenBoard[r][c] = char('0' + cellVal);
         }
     } 
@@ -90,12 +93,16 @@ void PlayerTurn(char displayBoard[SML][SML], const char hiddenBoard [SML][SML]) 
     char userRow;
     int userCol;
 
+    //NOTE : Want to combine input on a single string then parse
     cout << "Select a row: ";
     cin >> userRow;
     cout << "Select a column: ";
     cin >> userCol;
 
+    // Char val -> intended row val
     int rowIndex = char(userRow - 'A');
+
+    // Change display board to reflect hidden board at specified cell
     displayBoard[rowIndex][userCol - 1] = hiddenBoard[rowIndex][userCol - 1];
 }
 
