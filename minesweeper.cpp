@@ -38,7 +38,6 @@ void PrintBoard(const char displayBoard[SML][SML]) {
     }
 }
 
-
 void DeployMines(char hiddenBoard[SML][SML]) {
     int numMinesPlaced = 0;
 
@@ -96,14 +95,13 @@ void PlayerTurn(char displayBoard[SML][SML], const char hiddenBoard [SML][SML]) 
     cout << "Select a column: ";
     cin >> userCol;
 
-    int rowIndex = userRow - 'A';
-    displayBoard[rowIndex][userCol] = hiddenBoard[rowIndex][userCol];
-
+    int rowIndex = char(userRow - 'A');
+    displayBoard[rowIndex][userCol - 1] = hiddenBoard[rowIndex][userCol - 1];
 }
 
 void PlayGame(char displayBoard[SML][SML], char hiddenBoard[SML][SML]) {
-    int turnCounter = 0;
-    bool gameOver = false;
+    int turnCounter = 0; //for turn counter not built yet
+    bool gameOver = false; // NOTE: need to build CheckWin function
 
     PrintBoard(displayBoard);
     PlayerTurn(displayBoard, hiddenBoard);
@@ -130,7 +128,7 @@ int main() {
     char displayGrid[SML][SML];
     char actualGrid[SML][SML];
      
-    // Initialize Board
+    // Initialize Boards
     for (int r = 0; r < SML; r++) {
         for (int c = 0; c < SML; c++) {
         displayGrid[r][c] = '#';
@@ -141,6 +139,7 @@ int main() {
         actualGrid[r][c] = '0';
         }
     }
+
     PlayGame(displayGrid, actualGrid);
 
     
