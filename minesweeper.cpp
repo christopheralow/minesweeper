@@ -89,7 +89,28 @@ void GetCellVal(char hiddenBoard[SML][SML]) {
     } 
 }
 
-void PlayerTurn(char displayBoard[SML][SML], const char hiddenBoard [SML][SML]) {
+void RevealCell(char displayBoard[SML][SML], char hiddenBoard[SML][SML], int rowIndex, int colIndex) {
+
+    // Prevent checking outside area of actual grid
+    if (rowIndex < 0 || rowIndex > SML|| colIndex < 0 || colIndex > SML) {
+        return;
+    }
+    // Recursion stops if displayed board is already revealed at location
+    if (displayBoard[rowIndex][colIndex] != '#') {
+        return;
+    }
+    // Reveal Cell at user selected location
+    displayBoard[rowIndex][colIndex] = hiddenBoard[rowIndex][colIndex];
+
+    if (hiddenBoard[rowIndex][colIndex] == '0') {
+        RevealCell(displayBoard, hiddenBoard, rowIndex - 1, colIndex);
+        RevealCell(displayBoard, hiddenBoard, rowIndex + 1, colIndex);
+        RevealCell(displayBoard, hiddenBoard, rowIndex, colIndex - 1);
+        RevealCell(displayBoard, hiddenBoard, rowIndex, colIndex + 1);
+    } 
+}
+
+void PlayerTurn(char displayBoard[SML][SML], char hiddenBoard [SML][SML]) {
     char userRow;
     int userCol;
 
@@ -99,11 +120,12 @@ void PlayerTurn(char displayBoard[SML][SML], const char hiddenBoard [SML][SML]) 
     cout << "Select a column: ";
     cin >> userCol;
 
-    // Char val -> intended row val
-    int rowIndex = char(userRow - 'A');
+    int rowIndex = char(userRow - 'A'); // Char val -> intended row val
+    int colIndex = userCol - 1;
 
+    RevealCell(displayBoard, hiddenBoard, rowIndex, colIndex);
     // Change display board to reflect hidden board at specified cell
-    displayBoard[rowIndex][userCol - 1] = hiddenBoard[rowIndex][userCol - 1];
+    // displayBoard[rowIndex][colIndex] = hiddenBoard[rowIndex][colIndex];
 }
 
 void PlayGame(char displayBoard[SML][SML], char hiddenBoard[SML][SML]) {
@@ -111,10 +133,8 @@ void PlayGame(char displayBoard[SML][SML], char hiddenBoard[SML][SML]) {
     bool gameOver = false; // NOTE: need to build CheckWin function
 
     PrintBoard(displayBoard);
-    PlayerTurn(displayBoard, hiddenBoard);
     DeployMines(hiddenBoard);
     GetCellVal(hiddenBoard);
-    PrintBoard(displayBoard);
     
     while (!gameOver) {
         PlayerTurn(displayBoard, hiddenBoard);
