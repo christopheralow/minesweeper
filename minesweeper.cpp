@@ -164,6 +164,21 @@ void RevealMines(char displayBoard[SML][SML], char hiddenBoard[SML][SML]) {
             }
         }
     }
+    PrintBoard(displayBoard);
+}
+
+bool CheckWin (char displayBoard[SML][SML], char hiddenBoard[SML][SML]) {
+    bool winFound = false;
+
+    for (int r = 0; r < SML; r++) {
+        for (int c = 0; c < SML; c++) {
+            if (displayBoard[r][c] != '#' && displayBoard[r][c] != '*') {
+                winFound = true;
+            }
+        }
+    }
+
+    return winFound; 
 }
 
 void PlayGame(char displayBoard[SML][SML], char hiddenBoard[SML][SML]) {
@@ -178,18 +193,18 @@ void PlayGame(char displayBoard[SML][SML], char hiddenBoard[SML][SML]) {
         PrintBoard(displayBoard);
         PlayerTurn(displayBoard, hiddenBoard, rowIndex, colIndex);
 
+        // Lose Condition and Logic
         if (displayBoard[rowIndex][colIndex] == '*') {
             gameOver = true;
             cout << "*BOOM* You Lose. Hit a mine at " << char('A' + rowIndex) << colIndex + 1 << ".\n";
             RevealMines(displayBoard, hiddenBoard);
-            PrintBoard(displayBoard);
             break;
         }
-        /*gameOver = CheckWin();
-            //if (gameOver) {
-                cout << "You WIN!"
+        gameOver = CheckWin(displayBoard, hiddenBoard);
+            if (gameOver) {
+                cout << "You WIN!";
                 break;
-            }*/
+            }
     }       
 }
 
