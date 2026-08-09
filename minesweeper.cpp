@@ -89,10 +89,10 @@ void GetCellVal(char hiddenBoard[SML][SML]) {
     } 
 }
 
-void RevealCell(char displayBoard[SML][SML], char hiddenBoard[SML][SML], int rowIndex, int colIndex) {
+void RevealCell(char displayBoard[SML][SML], const char hiddenBoard[SML][SML], int rowIndex, int colIndex) {
 
     // Prevent checking outside area of actual grid
-    if (rowIndex < 0 || rowIndex > SML|| colIndex < 0 || colIndex > SML) {
+    if (rowIndex < 0 || rowIndex >= SML|| colIndex < 0 || colIndex >= SML) {
         return;
     }
     // Recursion stops if displayed board is already revealed at location
@@ -102,11 +102,16 @@ void RevealCell(char displayBoard[SML][SML], char hiddenBoard[SML][SML], int row
     // Reveal Cell at user selected location
     displayBoard[rowIndex][colIndex] = hiddenBoard[rowIndex][colIndex];
 
+    // Reveal all 8 surrounding cells and repeat for any revealed 0 cells. 
     if (hiddenBoard[rowIndex][colIndex] == '0') {
         RevealCell(displayBoard, hiddenBoard, rowIndex - 1, colIndex);
         RevealCell(displayBoard, hiddenBoard, rowIndex + 1, colIndex);
         RevealCell(displayBoard, hiddenBoard, rowIndex, colIndex - 1);
         RevealCell(displayBoard, hiddenBoard, rowIndex, colIndex + 1);
+        RevealCell(displayBoard, hiddenBoard, rowIndex - 1, colIndex - 1);
+        RevealCell(displayBoard, hiddenBoard, rowIndex - 1, colIndex + 1);
+        RevealCell(displayBoard, hiddenBoard, rowIndex + 1, colIndex - 1);
+        RevealCell(displayBoard, hiddenBoard, rowIndex + 1, colIndex + 1);
     } 
 }
 
