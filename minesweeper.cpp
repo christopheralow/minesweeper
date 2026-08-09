@@ -115,27 +115,42 @@ void RevealCell(char displayBoard[SML][SML], const char hiddenBoard[SML][SML], i
     } 
 }
 
+string GetValidInput () {
+    string userInput;
+    bool validInput = false;
+
+    while (!validInput) {
+        cout << "Select a row and column: ";
+        cin >> userInput;
+
+        //Rejects if not 2 characters
+        if (userInput.size() == 2 && 
+            userInput[0] >= 'A' && userInput[0] < 'A' + SML && 
+            userInput[1] > '0' && userInput[1] < '0' + SML) {
+                validInput = true;
+        }
+        else {
+            cin.clear();
+            cin.ignore(1000, '\n');
+            cout << "Invalid input. Please try again.\n";
+        }
+    }
+    return userInput;
+
+}
+
 void PlayerTurn(char displayBoard[SML][SML], char hiddenBoard [SML][SML]) {
     char userRow;
     int userCol;
-    string userInput;
-
-    //NOTE : Want to combine input on a single string then parse
-    cout << "Select a row and column: ";
-    cin >> userInput;
+    string userInput = GetValidInput();
     
     userRow = userInput.at(0);
-    userCol = userInput.at(1);
-
-    cout << userRow;
-    cout << userCol;
+    userCol = userInput.at(1) - 1;
 
     int rowIndex = char(userRow - 'A'); // Char val -> intended row val
     int colIndex = userCol - '0'; // Char val -> intended col val
 
     RevealCell(displayBoard, hiddenBoard, rowIndex, colIndex);
-    // Change display board to reflect hidden board at specified cell
-    // displayBoard[rowIndex][colIndex] = hiddenBoard[rowIndex][colIndex];
 }
 
 void PlayGame(char displayBoard[SML][SML], char hiddenBoard[SML][SML]) {
