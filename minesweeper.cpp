@@ -102,7 +102,7 @@ void RevealCell(char displayBoard[SML][SML], const char hiddenBoard[SML][SML], i
     // Reveal Cell at user selected location
     displayBoard[rowIndex][colIndex] = hiddenBoard[rowIndex][colIndex];
 
-    // Reveal all 8 surrounding cells and repeat for any revealed 0 cells. 
+    // Reveal all 8 surrounding cells and repeat for any revealed 0 cells.
     if (hiddenBoard[rowIndex][colIndex] == '0') {
         RevealCell(displayBoard, hiddenBoard, rowIndex - 1, colIndex);
         RevealCell(displayBoard, hiddenBoard, rowIndex + 1, colIndex);
@@ -118,15 +118,20 @@ void RevealCell(char displayBoard[SML][SML], const char hiddenBoard[SML][SML], i
 void PlayerTurn(char displayBoard[SML][SML], char hiddenBoard [SML][SML]) {
     char userRow;
     int userCol;
+    string userInput;
 
     //NOTE : Want to combine input on a single string then parse
-    cout << "Select a row: ";
-    cin >> userRow;
-    cout << "Select a column: ";
-    cin >> userCol;
+    cout << "Select a row and column: ";
+    cin >> userInput;
+    
+    userRow = userInput.at(0);
+    userCol = userInput.at(1);
+
+    cout << userRow;
+    cout << userCol;
 
     int rowIndex = char(userRow - 'A'); // Char val -> intended row val
-    int colIndex = userCol - 1;
+    int colIndex = userCol - '0'; // Char val -> intended col val
 
     RevealCell(displayBoard, hiddenBoard, rowIndex, colIndex);
     // Change display board to reflect hidden board at specified cell
@@ -134,7 +139,7 @@ void PlayerTurn(char displayBoard[SML][SML], char hiddenBoard [SML][SML]) {
 }
 
 void PlayGame(char displayBoard[SML][SML], char hiddenBoard[SML][SML]) {
-    int turnCounter = 0; //for turn counter not built yet
+    //int turnCounter = 0; for turn counter not built yet
     bool gameOver = false; // NOTE: need to build CheckWin function
 
     PrintBoard(displayBoard);
@@ -158,7 +163,7 @@ int main() {
 
     srand(time(0)); // for mine placement
     char displayGrid[SML][SML];
-    char actualGrid[SML][SML];
+    char hiddenGrid[SML][SML];
      
     // Initialize Boards
     for (int r = 0; r < SML; r++) {
@@ -168,11 +173,11 @@ int main() {
     }
     for (int r = 0; r < SML; r++) {
         for (int c = 0; c < SML; c++) {
-        actualGrid[r][c] = '0';
+        hiddenGrid[r][c] = '0';
         }
     }
 
-    PlayGame(displayGrid, actualGrid);
+    PlayGame(displayGrid, hiddenGrid);
 
     
     return 0;
