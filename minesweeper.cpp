@@ -136,7 +136,7 @@ string GetValidInput () {
         // Check for valid cell input
         if (userCell.size() == 2 && 
             userCell[0] >= 'A' && userCell[0] < 'A' + SML && 
-            userCell[1] > '0' && userCell[1] < '0' + SML) {
+            userCell[1] > '0' && userCell[1] <= '0' + SML) {
                 validInput = true;
         }
         else {
@@ -150,15 +150,14 @@ string GetValidInput () {
 
 }
 
-void ToggleFlag(char displayBoard[SML][SML], int rowIndex, int colIndex) {
+void ToggleFlag(char displayBoard[SML][SML], int row, int col) {
     
-    if (displayBoard[rowIndex][colIndex] == '#') {
-        displayBoard[rowIndex][colIndex] = 'F';
+    if (displayBoard[row][col] == '#') {
+        displayBoard[row][col] = 'F';
     }
-    else {
-        displayBoard[rowIndex][colIndex] = '#';
+    else if (displayBoard[row][col] == 'F') {
+        displayBoard[row][col] = '#';
     }
-
 }
 
 void PlayerTurn(char displayBoard[SML][SML], char hiddenBoard [SML][SML], int& rowIndex, int& colIndex) {
