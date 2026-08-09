@@ -19,7 +19,10 @@ void PrintBoard(const char displayBoard[SML][SML]) {
     for (int r = 0; r < SML; r++) {
         cout << char('A' + r) << " ";
         for (int c = 0; c < SML; c++) {
-            if (displayBoard[r][c] == '0') {
+            if (displayBoard[r][c] == '*') {
+                cout << "* ";
+            }
+            else if (displayBoard[r][c] == '0') {
                 cout << "  ";
             }
             else if (displayBoard[r][c] == 'F') {
@@ -28,7 +31,7 @@ void PrintBoard(const char displayBoard[SML][SML]) {
             else if (displayBoard[r][c] >= '1' && displayBoard [r][c] <= '8') {
                 cout << displayBoard[r][c] << " ";
             }
-            else if (displayBoard[r][c] == '#' || displayBoard[r][c] == '*') {
+            else if (displayBoard[r][c] == '#') {
                 cout << "# ";
             }
         }
@@ -123,7 +126,6 @@ string GetValidInput () {
         cout << "Select a row and column: ";
         cin >> userInput;
 
-        //Rejects if not 2 characters
         if (userInput.size() == 2 && 
             userInput[0] >= 'A' && userInput[0] < 'A' + SML && 
             userInput[1] > '0' && userInput[1] < '0' + SML) {
@@ -139,39 +141,56 @@ string GetValidInput () {
 
 }
 
-void PlayerTurn(char displayBoard[SML][SML], char hiddenBoard [SML][SML]) {
+void PlayerTurn(char displayBoard[SML][SML], char hiddenBoard [SML][SML], int& rowIndex, int& colIndex) {
     char userRow;
     int userCol;
     string userInput = GetValidInput();
     
     userRow = userInput.at(0);
-    userCol = userInput.at(1) - 1;
+    userCol = userInput.at(1);
 
-    int rowIndex = char(userRow - 'A'); // Char val -> intended row val
-    int colIndex = userCol - '0'; // Char val -> intended col val
+    rowIndex = char(userRow - 'A'); // Char val -> user intended row val
+    colIndex = userCol - '1'; // Char val -> user intended col val
 
     RevealCell(displayBoard, hiddenBoard, rowIndex, colIndex);
 }
 
+void RevealMines(char displayBoard[SML][SML], char hiddenBoard[SML][SML]) {
+
+    for (int r = 0; r < SML; r++) {
+        for (int c = 0; c < SML; c++) {
+            if (hiddenBoard[r][c] == '*') {
+                displayBoard[r][c] = hiddenBoard[r][c];
+            }
+        }
+    }
+}
+
 void PlayGame(char displayBoard[SML][SML], char hiddenBoard[SML][SML]) {
-    //int turnCounter = 0; for turn counter not built yet
+    int rowIndex;
+    int colIndex;
     bool gameOver = false; // NOTE: need to build CheckWin function
 
-    PrintBoard(displayBoard);
     DeployMines(hiddenBoard);
     GetCellVal(hiddenBoard);
     
     while (!gameOver) {
-        PlayerTurn(displayBoard, hiddenBoard);
         PrintBoard(displayBoard);
-        //gameOver = CheckLoss()
-            //if gameOver
-                //break
-        //gameOver = CheckWin()
-            //if gameOver
-                //break
+        PlayerTurn(displayBoard, hiddenBoard, rowIndex, colIndex);
+
+        if (displayBoard[rowIndex][colIndex] == '*') {
+            gameOver = true;
+            cout << "*BOOM* You Lose. Hit a mine at " << char('A' + rowIndex) << colIndex + 1 << ".\n";
+            RevealMines(displayBoard, hiddenBoard);
+            PrintBoard(displayBoard);
+            break;
+        }
+        /*gameOver = CheckWin();
+            //if (gameOver) {
+                cout << "You WIN!"
+                break;
+            }*/
     }       
-    //PlayerTurn;
 }
 
 int main() {
