@@ -69,7 +69,6 @@ bool IsMine(const char hiddenBoard[SML][SML], int row, int col) {
     }
 
     return mineFound;
-    // NOTE: bit redundant on the statement here could use logic refactor later
 }
 
 // Determines value of cells based on neighboring mines and assigns value on actual Grid
@@ -123,12 +122,21 @@ string GetValidInput () {
     bool validInput = false;
 
     while (!validInput) {
-        cout << "Select a row and column: ";
+        cout << "Enter a cell (^ to flag): ";
         cin >> userInput;
+        
+        string addFlag = userInput;
+        string userCell = userInput;
 
-        if (userInput.size() == 2 && 
-            userInput[0] >= 'A' && userInput[0] < 'A' + SML && 
-            userInput[1] > '0' && userInput[1] < '0' + SML) {
+        //Checks for flag input and passes the coordinates to next check
+        if (addFlag.size() == 3 && addFlag[0] == '^') {
+            userCell = addFlag.substr(1);
+        }
+
+        // Check for valid cell input
+        if (userCell.size() == 2 && 
+            userCell[0] >= 'A' && userCell[0] < 'A' + SML && 
+            userCell[1] > '0' && userCell[1] < '0' + SML) {
                 validInput = true;
         }
         else {
@@ -137,22 +145,51 @@ string GetValidInput () {
             cout << "Invalid input. Please try again.\n";
         }
     }
+
     return userInput;
+
+}
+
+void ToggleFlag(char displayBoard[SML][SML], int rowIndex, int colIndex) {
+    
+    if (displayBoard[rowIndex][colIndex] == '#') {
+        displayBoard[rowIndex][colIndex] = 'F';
+    }
+    else {
+        displayBoard[rowIndex][colIndex] = '#';
+    }
 
 }
 
 void PlayerTurn(char displayBoard[SML][SML], char hiddenBoard [SML][SML], int& rowIndex, int& colIndex) {
     char userRow;
     int userCol;
-    string userInput = GetValidInput();
-    
-    userRow = userInput.at(0);
-    userCol = userInput.at(1);
+    bool addFlag = false;
 
-    rowIndex = char(userRow - 'A'); // Char val -> user intended row val
-    colIndex = userCol - '1'; // Char val -> user intended col val
+    do { // Flagging does not consume a player turn
+        string userInput = GetValidInput();
+        addFlag = false;
 
-    RevealCell(displayBoard, hiddenBoard, rowIndex, colIndex);
+
+        if (userInput.size() == 3) {
+            addFlag = true;
+            userInput = userInput.substr(1);
+        }
+        
+        userRow = userInput.at(0);
+        userCol = userInput.at(1);
+
+        rowIndex = char(userRow - 'A'); // Char val -> user intended row val
+        colIndex = userCol - '1'; // Char val -> user intended col val
+        
+        if (addFlag) {
+            ToggleFlag(displayBoard, rowIndex, colIndex);
+            PrintBoard(displayBoard);
+        } 
+        else {
+            RevealCell(displayBoard, hiddenBoard, rowIndex, colIndex);
+        }
+    } while (addFlag);
 }
 
 void RevealMines(char displayBoard[SML][SML], char hiddenBoard[SML][SML]) {
@@ -196,15 +233,15 @@ void PlayGame(char displayBoard[SML][SML], char hiddenBoard[SML][SML]) {
         // Lose Condition and Logic
         if (displayBoard[rowIndex][colIndex] == '*') {
             gameOver = true;
-            cout << "*BOOM* You Lose. Hit a mine at " << char('A' + rowIndex) << colIndex + 1 << ".\n";
             RevealMines(displayBoard, hiddenBoard);
+            cout << "*BOOM* You Lose. Hit a mine at " << char('A' + rowIndex) << colIndex + 1 << ".\n";
             break;
         }
-        gameOver = CheckWin(displayBoard, hiddenBoard);
+        /*gameOver = CheckWin(displayBoard, hiddenBoard);
             if (gameOver) {
                 cout << "You WIN!";
                 break;
-            }
+            }*/
     }       
 }
 
