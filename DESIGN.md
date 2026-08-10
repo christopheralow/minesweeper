@@ -23,15 +23,15 @@ to play.
 ## Requirements
 
 **Must do:**
-[x] Generate a 9x9 grid with set number of mines placed at random positions
-[x] Let the player choose a square by row and column
-[x] Reveal the number of mines adjacent to the chosen square
-[x] Auto-reveal connected empty regions when a zero-adjacent square is picked
-[x] Let the player flag squares they suspect contain mines
-[x] Print the board between turns
-[x] End the game on a mine hit (loss) or when all safe squares are revealed (win)
-[x] Reveal all mines on loss
-[x] Prevent first turn loss
+- Generate a 9x9 grid with set number of mines placed at random positions
+- Let the player choose a square by row and column
+- Reveal the number of mines adjacent to the chosen square
+- Auto-reveal connected empty regions when a zero-adjacent square is picked
+- Let the player flag squares they suspect contain mines
+- Print the board between turns
+- End the game on a mine hit (loss) or when all safe squares are revealed (win)
+- Reveal all mines on loss
+- Prevent first turn loss
 
 **Out of scope for v1.0:**
 - Saving games to a file

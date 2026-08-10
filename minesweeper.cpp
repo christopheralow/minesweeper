@@ -5,10 +5,72 @@
 
 using namespace std;
 
+inline const char* TITLE = R"(
+ __  __  ___  _  _  ___   ___ __      __ ___  ___  ___  ___  ___
+|  \/  ||_ _|| \| || __| / __|\ \    / /| __|| __|| _ \| __|| _ \
+| |\/| | | | |  ` || _|  \__ \ \ \/\/ / | _| | _| |  _/| _| |   /
+|_|  |_||___||_|\_||___| |___/  \_/\_/  |___||___||_|  |___||_|_\
+* * * * * * * * * * * * * * * * * * * * * * * by Christopher A Low   
+)";
+
+inline const char* MENU = R"(
+               +-------------------------------+
+               |      G A M E  *  M O D E      |
+               +-------------------------------+
+
+            [1] LEUITENANT   [2] MAJOR   [3] COLONEL
+                      
+                     (Select '0' to Exit)
+
+)";
+
 const int SML = 9;
 const int MINES_SML = 10;
 
-void PrintBoard(const char displayBoard[SML][SML]) {
+int LaunchMenu() {
+    int gameMode;
+
+    cout << MENU;
+    cin >> gameMode;
+    while (cin.fail() || gameMode != 0 && gameMode != 1
+                      && gameMode != 2 && gameMode != 3) {
+        cin.clear();
+        cin.ignore(1000, '\n');
+        cout << "Select a valid game mode: " << endl;
+        cin >> gameMode;
+    }
+    
+    return gameMode;
+}
+
+bool EnablePrettyMod() {
+    char enableMod;
+    bool prettyMod;
+
+    cout << endl;
+    cout << "Enable improved graphics? (warning: can cause issues for certain OS): ";
+    cin >> enableMod;
+    
+    while (cin.fail() || enableMod != 'Y' && enableMod != 'y'
+                      && enableMod != 'N' && enableMod != 'n') {
+        cin.clear();
+        cin.ignore(1000, '\n');
+        cout << "Please enter \"Y\" or \"N\": " << endl;
+        cin >> enableMod;
+    }
+
+    if (enableMod == 'Y' || enableMod == 'y') {
+        prettyMod = true;
+    }
+    else {
+        prettyMod = false;
+    }
+
+    return prettyMod;
+}
+
+void PrintBoard(const char displayBoard[SML][SML], bool prettyMod) {
+    cout << endl;
     cout << "  ";
     for (int n = 0; n < SML; n++) {
         cout << n + 1 << " ";
@@ -19,19 +81,34 @@ void PrintBoard(const char displayBoard[SML][SML]) {
         cout << char('A' + r) << " ";
         for (int c = 0; c < SML; c++) {
             if (displayBoard[r][c] == '*') {
-                cout << "* ";
+                if (prettyMod) {
+                    cout << "✶ ";
+                }
+                else {
+                    cout << "* ";
+                }
             }
             else if (displayBoard[r][c] == '0') {
                 cout << "  ";
             }
             else if (displayBoard[r][c] == 'F') {
-                cout << "F ";
+                if (prettyMod) {
+                    cout << "⚑ ";
+                }
+                else {
+                    cout << "F ";
+                }
             }
             else if (displayBoard[r][c] >= '1' && displayBoard[r][c] <= '8') {
                 cout << displayBoard[r][c] << " ";
             }
             else if (displayBoard[r][c] == '#') {
-                cout << "# ";
+                if (prettyMod) {
+                    cout << "■ ";
+                }
+                else {
+                    cout << "# ";
+                }
             }
         }
         cout << "\n";
@@ -161,7 +238,7 @@ void ToggleFlag(char displayBoard[SML][SML], int row, int col) {
     }
 }
 
-void PlayerTurn(char displayBoard[SML][SML], char hiddenBoard [SML][SML], int& rowIndex, int& colIndex) {
+void PlayerTurn(char displayBoard[SML][SML], char hiddenBoard [SML][SML], int& rowIndex, int& colIndex, bool prettyMod) {
     char userRow;
     int userCol;
     bool addFlag = false;
@@ -184,7 +261,7 @@ void PlayerTurn(char displayBoard[SML][SML], char hiddenBoard [SML][SML], int& r
         
         if (addFlag) {
             ToggleFlag(displayBoard, rowIndex, colIndex);
-            PrintBoard(displayBoard);
+            PrintBoard(displayBoard, prettyMod);
         } 
         else {
             if (firstTurn) { // Loop Flag to prevent first turn loss
@@ -201,7 +278,7 @@ void PlayerTurn(char displayBoard[SML][SML], char hiddenBoard [SML][SML], int& r
 }
 
 // Shows mine location on display grid at loss
-void RevealMines(char displayBoard[SML][SML], char hiddenBoard[SML][SML]) {
+void RevealMines(char displayBoard[SML][SML], char hiddenBoard[SML][SML], bool prettyMod) {
     for (int r = 0; r < SML; r++) {
         for (int c = 0; c < SML; c++) {
             if (hiddenBoard[r][c] == '*') {
@@ -209,7 +286,7 @@ void RevealMines(char displayBoard[SML][SML], char hiddenBoard[SML][SML]) {
             }
         }
     }
-    PrintBoard(displayBoard);
+    PrintBoard(displayBoard, prettyMod);
 }
 
 bool CheckWin(char displayBoard[SML][SML], char hiddenBoard[SML][SML]) {
@@ -229,25 +306,25 @@ bool CheckWin(char displayBoard[SML][SML], char hiddenBoard[SML][SML]) {
     return winFound; 
 }
 
-void PlayGame(char displayBoard[SML][SML], char hiddenBoard[SML][SML]) {
+void PlayGame(char displayBoard[SML][SML], char hiddenBoard[SML][SML], bool prettyMod) {
     int rowIndex;
     int colIndex;
     bool gameOver = false; // NOTE: need to build CheckWin function
     
     while (!gameOver) {
-        PrintBoard(displayBoard);
-        PlayerTurn(displayBoard, hiddenBoard, rowIndex, colIndex);
+        PrintBoard(displayBoard, prettyMod);
+        PlayerTurn(displayBoard, hiddenBoard, rowIndex, colIndex, prettyMod);
 
         // Win & Lose Conditions
         if (displayBoard[rowIndex][colIndex] == '*') {
             gameOver = true;
-            RevealMines(displayBoard, hiddenBoard);
+            RevealMines(displayBoard, hiddenBoard, prettyMod);
             cout << "*BOOM* You Lose. Hit a mine at " << char('A' + rowIndex) << colIndex + 1 << ".\n";
             break;
         }
         gameOver = CheckWin(displayBoard, hiddenBoard);
         if (gameOver) {
-            PrintBoard(displayBoard);
+            PrintBoard(displayBoard, prettyMod);
             cout << "You WIN!";
             break;
         }
@@ -258,21 +335,27 @@ int main() {
     srand(time(0)); // for mine placement
     char displayGrid[SML][SML];
     char hiddenGrid[SML][SML];
+
+    cout << TITLE;
+    bool prettyMod = EnablePrettyMod();
+    bool loopGame = LaunchMenu() != 0;
     
-    // Initialize Boards
-    for (int r = 0; r < SML; r++) {
-        for (int c = 0; c < SML; c++) {
-            displayGrid[r][c] = '#';
+    while (loopGame) {
+        // Initialize Boards
+        for (int r = 0; r < SML; r++) {
+            for (int c = 0; c < SML; c++) {
+                displayGrid[r][c] = '#';
+            }
         }
-    }
-    for (int r = 0; r < SML; r++) {
-        for (int c = 0; c < SML; c++) {
-            hiddenGrid[r][c] = '0';
+        for (int r = 0; r < SML; r++) {
+            for (int c = 0; c < SML; c++) {
+                hiddenGrid[r][c] = '0';
+            }
         }
+
+        PlayGame(displayGrid, hiddenGrid, prettyMod);
+        //loopGame = LaunchMenu();
     }
-
-    PlayGame(displayGrid, hiddenGrid);
-
     
     return 0;
 
