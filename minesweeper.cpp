@@ -14,6 +14,8 @@ inline const char* TITLE = R"(
 )";
 
 inline const char* MENU = R"(
+
+                       Start a New Game
                +-------------------------------+
                |      G A M E  *  M O D E      |
                +-------------------------------+
@@ -354,7 +356,7 @@ int main() {
         }
 
         PlayGame(displayGrid, hiddenGrid, prettyMod);
-        //loopGame = LaunchMenu();
+        loopGame = LaunchMenu();
     }
     
     return 0;
