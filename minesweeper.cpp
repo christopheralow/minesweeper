@@ -238,11 +238,10 @@ void ToggleFlag(char displayBoard[SML][SML], int row, int col) {
     }
 }
 
-void PlayerTurn(char displayBoard[SML][SML], char hiddenBoard [SML][SML], int& rowIndex, int& colIndex, bool prettyMod) {
+void PlayerTurn(char displayBoard[SML][SML], char hiddenBoard [SML][SML], int& rowIndex, int& colIndex, bool prettyMod, bool& isFirstTurn) {
     char userRow;
     int userCol;
     bool addFlag = false;
-    bool firstTurn = true;
 
     do { // Flagging does not consume a player turn
         string userInput = GetValidInput();
@@ -264,11 +263,11 @@ void PlayerTurn(char displayBoard[SML][SML], char hiddenBoard [SML][SML], int& r
             PrintBoard(displayBoard, prettyMod);
         } 
         else {
-            if (firstTurn) { // Loop Flag to prevent first turn loss
+            if (isFirstTurn) { // Loop Flag to prevent first turn loss
                 DeployMines(hiddenBoard, rowIndex, colIndex);
                 GetCellVal(hiddenBoard);
                 RevealCell(displayBoard, hiddenBoard, rowIndex, colIndex);
-                firstTurn = false;
+                isFirstTurn = false;
             }
             else {
                 RevealCell(displayBoard, hiddenBoard, rowIndex, colIndex);
@@ -310,10 +309,11 @@ void PlayGame(char displayBoard[SML][SML], char hiddenBoard[SML][SML], bool pret
     int rowIndex;
     int colIndex;
     bool gameOver = false; // NOTE: need to build CheckWin function
-    
+    bool isFirstTurn = true;
+
     while (!gameOver) {
         PrintBoard(displayBoard, prettyMod);
-        PlayerTurn(displayBoard, hiddenBoard, rowIndex, colIndex, prettyMod);
+        PlayerTurn(displayBoard, hiddenBoard, rowIndex, colIndex, prettyMod, isFirstTurn);
 
         // Win & Lose Conditions
         if (displayBoard[rowIndex][colIndex] == '*') {
