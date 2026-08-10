@@ -39,21 +39,26 @@ void PrintBoard(const char displayBoard[SML][SML]) {
     }
 }
 
-// Randomly assigns mines to actual Grid
-void DeployMines(char hiddenBoard[SML][SML]) {
+// Randomly assigns mines to actual Grid, keeping the first-click cell and its
+// 8 neighbors mine-free so turn one always opens a safe zone
+void DeployMines(char hiddenBoard[SML][SML], int safeRow, int safeCol) {
     int numMinesPlaced = 0;
 
     while (numMinesPlaced < MINES_SML) {
-        // Select a random row and column 
+        // Select a random row and column
         int row = rand() % SML;
         int col = rand() % SML;
+
+        // Safe Zone starts out with flood fill on first turn
+        bool inSafeZone = row >= safeRow - 1 && row <= safeRow + 1 &&
+                           col >= safeCol - 1 && col <= safeCol + 1;
+
         // Check cell status and drop a mine
-        if (hiddenBoard[row][col] != '*') {
-            hiddenBoard[row][col] = '*'; 
+        if (hiddenBoard[row][col] != '*' && !inSafeZone) {
+            hiddenBoard[row][col] = '*';
             numMinesPlaced++;
         }
     }
-    // NOTE: Must add a check to prevent first turn loss
 }
 
 // For use inside GetCellVal to check for mines within the area of the actual Grid
@@ -164,11 +169,11 @@ void PlayerTurn(char displayBoard[SML][SML], char hiddenBoard [SML][SML], int& r
     char userRow;
     int userCol;
     bool addFlag = false;
+    bool firstTurn = true;
 
     do { // Flagging does not consume a player turn
         string userInput = GetValidInput();
         addFlag = false;
-
 
         if (userInput.size() == 3) {
             addFlag = true;
@@ -186,7 +191,15 @@ void PlayerTurn(char displayBoard[SML][SML], char hiddenBoard [SML][SML], int& r
             PrintBoard(displayBoard);
         } 
         else {
-            RevealCell(displayBoard, hiddenBoard, rowIndex, colIndex);
+            if (firstTurn) { // Loop Flag to prevent first turn loss
+                DeployMines(hiddenBoard, rowIndex, colIndex);
+                GetCellVal(hiddenBoard);
+                RevealCell(displayBoard, hiddenBoard, rowIndex, colIndex);
+                firstTurn = false;
+            }
+            else {
+                RevealCell(displayBoard, hiddenBoard, rowIndex, colIndex);
+            }
         }
     } while (addFlag);
 }
@@ -224,15 +237,12 @@ void PlayGame(char displayBoard[SML][SML], char hiddenBoard[SML][SML]) {
     int rowIndex;
     int colIndex;
     bool gameOver = false; // NOTE: need to build CheckWin function
-
-    DeployMines(hiddenBoard);
-    GetCellVal(hiddenBoard);
     
     while (!gameOver) {
         PrintBoard(displayBoard);
         PlayerTurn(displayBoard, hiddenBoard, rowIndex, colIndex);
 
-        // Lose Condition and Logic
+        // Win & Lose Conditions
         if (displayBoard[rowIndex][colIndex] == '*') {
             gameOver = true;
             RevealMines(displayBoard, hiddenBoard);
@@ -241,6 +251,7 @@ void PlayGame(char displayBoard[SML][SML], char hiddenBoard[SML][SML]) {
         }
         gameOver = CheckWin(displayBoard, hiddenBoard);
             if (gameOver) {
+                PrintBoard(displayBoard);
                 cout << "You WIN!";
                 break;
             }
@@ -252,7 +263,7 @@ int main() {
     srand(time(0)); // for mine placement
     char displayGrid[SML][SML];
     char hiddenGrid[SML][SML];
-     
+    
     // Initialize Boards
     for (int r = 0; r < SML; r++) {
         for (int c = 0; c < SML; c++) {
