@@ -9,7 +9,6 @@ const int SML = 9;
 const int MINES_SML = 10;
 
 void PrintBoard(const char displayBoard[SML][SML]) {
-
     cout << "  ";
     for (int n = 0; n < SML; n++) {
         cout << n + 1 << " ";
@@ -28,7 +27,7 @@ void PrintBoard(const char displayBoard[SML][SML]) {
             else if (displayBoard[r][c] == 'F') {
                 cout << "F ";
             }
-            else if (displayBoard[r][c] >= '1' && displayBoard [r][c] <= '8') {
+            else if (displayBoard[r][c] >= '1' && displayBoard[r][c] <= '8') {
                 cout << displayBoard[r][c] << " ";
             }
             else if (displayBoard[r][c] == '#') {
@@ -39,8 +38,7 @@ void PrintBoard(const char displayBoard[SML][SML]) {
     }
 }
 
-// Randomly assigns mines to actual Grid, keeping the first-click cell and its
-// 8 neighbors mine-free so turn one always opens a safe zone
+// Randomly assigns mines to actual Grid, first pick has safezone
 void DeployMines(char hiddenBoard[SML][SML], int safeRow, int safeCol) {
     int numMinesPlaced = 0;
 
@@ -97,9 +95,8 @@ void GetCellVal(char hiddenBoard[SML][SML]) {
 }
 
 void RevealCell(char displayBoard[SML][SML], const char hiddenBoard[SML][SML], int rowIndex, int colIndex) {
-
     // Prevent checking outside area of actual grid
-    if (rowIndex < 0 || rowIndex >= SML|| colIndex < 0 || colIndex >= SML) {
+    if (rowIndex < 0 || rowIndex >= SML || colIndex < 0 || colIndex >= SML) {
         return;
     }
     // Recursion stops if displayed board is already revealed at location
@@ -122,7 +119,7 @@ void RevealCell(char displayBoard[SML][SML], const char hiddenBoard[SML][SML], i
     } 
 }
 
-string GetValidInput () {
+string GetValidInput() {
     string userInput;
     bool validInput = false;
 
@@ -156,7 +153,6 @@ string GetValidInput () {
 }
 
 void ToggleFlag(char displayBoard[SML][SML], int row, int col) {
-    
     if (displayBoard[row][col] == '#') {
         displayBoard[row][col] = 'F';
     }
@@ -204,8 +200,8 @@ void PlayerTurn(char displayBoard[SML][SML], char hiddenBoard [SML][SML], int& r
     } while (addFlag);
 }
 
+// Shows mine location on display grid at loss
 void RevealMines(char displayBoard[SML][SML], char hiddenBoard[SML][SML]) {
-
     for (int r = 0; r < SML; r++) {
         for (int c = 0; c < SML; c++) {
             if (hiddenBoard[r][c] == '*') {
@@ -216,7 +212,7 @@ void RevealMines(char displayBoard[SML][SML], char hiddenBoard[SML][SML]) {
     PrintBoard(displayBoard);
 }
 
-bool CheckWin (char displayBoard[SML][SML], char hiddenBoard[SML][SML]) {
+bool CheckWin(char displayBoard[SML][SML], char hiddenBoard[SML][SML]) {
     bool winFound = true;
 
     for (int r = 0; r < SML; r++) {
@@ -250,16 +246,15 @@ void PlayGame(char displayBoard[SML][SML], char hiddenBoard[SML][SML]) {
             break;
         }
         gameOver = CheckWin(displayBoard, hiddenBoard);
-            if (gameOver) {
-                PrintBoard(displayBoard);
-                cout << "You WIN!";
-                break;
-            }
+        if (gameOver) {
+            PrintBoard(displayBoard);
+            cout << "You WIN!";
+            break;
+        }
     }       
 }
 
 int main() {
-
     srand(time(0)); // for mine placement
     char displayGrid[SML][SML];
     char hiddenGrid[SML][SML];
@@ -267,12 +262,12 @@ int main() {
     // Initialize Boards
     for (int r = 0; r < SML; r++) {
         for (int c = 0; c < SML; c++) {
-        displayGrid[r][c] = '#';
+            displayGrid[r][c] = '#';
         }
     }
     for (int r = 0; r < SML; r++) {
         for (int c = 0; c < SML; c++) {
-        hiddenGrid[r][c] = '0';
+            hiddenGrid[r][c] = '0';
         }
     }
 
