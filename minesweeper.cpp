@@ -2,6 +2,7 @@
 #include <ctime>
 #include <cstdlib>
 #include <string>
+#include <iomanip>
 
 using namespace std;
 
@@ -10,24 +11,32 @@ inline const char* TITLE = R"(
 |  \/  ||_ _|| \| || __| / __|\ \    / /| __|| __|| _ \| __|| _ \
 | |\/| | | | |  ` || _|  \__ \ \ \/\/ / | _| | _| |  _/| _| |   /
 |_|  |_||___||_|\_||___| |___/  \_/\_/  |___||___||_|  |___||_|_\
-* * * * * * * * * * * * * * * * * * * * * * * by Christopher A Low   
+* * * * * * * * * * * * * * * * * * * * * * * by Christopher A Low
 )";
 
 inline const char* MENU = R"(
-
-                       Start a New Game
                +-------------------------------+
                |      G A M E  *  M O D E      |
                +-------------------------------+
 
-            [1] LEUITENANT   [2] MAJOR   [3] COLONEL
-                      
-                     (Select '0' to Exit)
+            [1] LIEUTENANT   [2] MAJOR   [3] COLONEL
 
-)";
+             Select a Game Mode (or '0' to Exit): )";
 
 const int SML = 9;
+const int MED = 16;
+const int LRG = 22;
 const int MINES_SML = 10;
+const int MINES_MED = 40;
+const int MINES_LRG = 101;
+
+// Boards declared at LRG X LRG, dim controls utilized grid dimensions
+struct Board {
+    char displayBoard[LRG][LRG];
+    char hiddenBoard[LRG][LRG];
+    int dim;
+    int numMines;
+};
 
 int LaunchMenu() {
     int gameMode;
@@ -38,10 +47,10 @@ int LaunchMenu() {
                       && gameMode != 2 && gameMode != 3) {
         cin.clear();
         cin.ignore(1000, '\n');
-        cout << "Select a valid game mode: " << endl;
+        cout << "Select a valid game mode: ";
         cin >> gameMode;
     }
-    
+
     return gameMode;
 }
 
@@ -52,7 +61,7 @@ bool EnablePrettyMod() {
     cout << endl;
     cout << "Enable improved graphics? (warning: can cause issues for certain OS): ";
     cin >> enableMod;
-    
+
     while (cin.fail() || enableMod != 'Y' && enableMod != 'y'
                       && enableMod != 'N' && enableMod != 'n') {
         cin.clear();
@@ -71,46 +80,31 @@ bool EnablePrettyMod() {
     return prettyMod;
 }
 
-void PrintBoard(const char displayBoard[SML][SML], bool prettyMod) {
+void PrintBoard(const Board& game, bool prettyMod) {
     cout << endl;
     cout << "  ";
-    for (int n = 0; n < SML; n++) {
-        cout << n + 1 << " ";
+    for (int n = 0; n < game.dim; n++) {
+        cout << setw(2) << n + 1 << " ";
     }
     cout << endl;
 
-    for (int r = 0; r < SML; r++) {
+    for (int r = 0; r < game.dim; r++) {
         cout << char('A' + r) << " ";
-        for (int c = 0; c < SML; c++) {
-            if (displayBoard[r][c] == '*') {
-                if (prettyMod) {
-                    cout << "✶ ";
-                }
-                else {
-                    cout << "* ";
-                }
+        for (int c = 0; c < game.dim; c++) {
+            if (game.displayBoard[r][c] == '*') {
+                cout << (prettyMod ? " ✶ " : " * ");
             }
-            else if (displayBoard[r][c] == '0') {
-                cout << "  ";
+            else if (game.displayBoard[r][c] == '0') {
+                cout << "   ";
             }
-            else if (displayBoard[r][c] == 'F') {
-                if (prettyMod) {
-                    cout << "⚑ ";
-                }
-                else {
-                    cout << "F ";
-                }
+            else if (game.displayBoard[r][c] == 'F') {
+                cout << (prettyMod ? " ⚑ " : " F ");
             }
-            else if (displayBoard[r][c] >= '1' && displayBoard[r][c] <= '8') {
-                cout << displayBoard[r][c] << " ";
+            else if (game.displayBoard[r][c] >= '1' && game.displayBoard[r][c] <= '8') {
+                cout << " " << game.displayBoard[r][c] << " ";
             }
-            else if (displayBoard[r][c] == '#') {
-                if (prettyMod) {
-                    cout << "■ ";
-                }
-                else {
-                    cout << "# ";
-                }
+            else if (game.displayBoard[r][c] == '#') {
+                cout << (prettyMod ? " ■ " : " # ");
             }
         }
         cout << "\n";
@@ -118,35 +112,35 @@ void PrintBoard(const char displayBoard[SML][SML], bool prettyMod) {
 }
 
 // Randomly assigns mines to actual Grid, first pick has safezone
-void DeployMines(char hiddenBoard[SML][SML], int safeRow, int safeCol) {
+void DeployMines(Board& game, int safeRow, int safeCol) {
     int numMinesPlaced = 0;
 
-    while (numMinesPlaced < MINES_SML) {
+    while (numMinesPlaced < game.numMines) {
         // Select a random row and column
-        int row = rand() % SML;
-        int col = rand() % SML;
+        int row = rand() % game.dim;
+        int col = rand() % game.dim;
 
         // Safe Zone starts out with flood fill on first turn
         bool inSafeZone = row >= safeRow - 1 && row <= safeRow + 1 &&
                            col >= safeCol - 1 && col <= safeCol + 1;
 
         // Check cell status and drop a mine
-        if (hiddenBoard[row][col] != '*' && !inSafeZone) {
-            hiddenBoard[row][col] = '*';
+        if (game.hiddenBoard[row][col] != '*' && !inSafeZone) {
+            game.hiddenBoard[row][col] = '*';
             numMinesPlaced++;
         }
     }
 }
 
 // For use inside GetCellVal to check for mines within the area of the actual Grid
-bool IsMine(const char hiddenBoard[SML][SML], int row, int col) {
+bool IsMine(const Board& game, int row, int col) {
     bool mineFound = false;
-    
+
     // Prevent checking outside range of board
-    if (row < 0 || row >= SML || col < 0 || col >= SML) {
+    if (row < 0 || row >= game.dim || col < 0 || col >= game.dim) {
         mineFound = false;
     }
-    else if (hiddenBoard[row][col] == '*') {
+    else if (game.hiddenBoard[row][col] == '*') {
         mineFound = true;
     }
 
@@ -154,76 +148,77 @@ bool IsMine(const char hiddenBoard[SML][SML], int row, int col) {
 }
 
 // Determines value of cells based on neighboring mines and assigns value on actual Grid
-void GetCellVal(char hiddenBoard[SML][SML]) {
-    for (int r = 0; r < SML; r++) {
-        for (int c = 0; c < SML; c++) {
+void GetCellVal(Board& game) {
+    for (int r = 0; r < game.dim; r++) {
+        for (int c = 0; c < game.dim; c++) {
             // Skip '*' cells
-            if (hiddenBoard[r][c] == '*') {
+            if (game.hiddenBoard[r][c] == '*') {
                 continue;
-            } 
+            }
             // Sum of 8 bool statments makes cell value
-            int cellVal = IsMine(hiddenBoard, r - 1, c - 1) + IsMine(hiddenBoard, r - 1, c + 0)
-                        + IsMine(hiddenBoard, r - 1, c + 1) + IsMine(hiddenBoard, r + 0, c - 1)
-                        + IsMine(hiddenBoard, r + 0, c + 1) + IsMine(hiddenBoard, r + 1, c - 1)
-                        + IsMine(hiddenBoard, r + 1, c - 0) + IsMine(hiddenBoard, r + 1, c + 1);
+            int cellVal = IsMine(game, r - 1, c - 1) + IsMine(game, r - 1, c + 0)
+                        + IsMine(game, r - 1, c + 1) + IsMine(game, r + 0, c - 1)
+                        + IsMine(game, r + 0, c + 1) + IsMine(game, r + 1, c - 1)
+                        + IsMine(game, r + 1, c - 0) + IsMine(game, r + 1, c + 1);
 
             // Int -> Char
-            hiddenBoard[r][c] = char('0' + cellVal);
+            game.hiddenBoard[r][c] = char('0' + cellVal);
         }
-    } 
+    }
 }
 
-void RevealCell(char displayBoard[SML][SML], const char hiddenBoard[SML][SML], int rowIndex, int colIndex) {
+void RevealCell(Board& game, int rowIndex, int colIndex) {
     // Prevent checking outside area of actual grid
-    if (rowIndex < 0 || rowIndex >= SML || colIndex < 0 || colIndex >= SML) {
+    if (rowIndex < 0 || rowIndex >= game.dim || colIndex < 0 || colIndex >= game.dim) {
         return;
     }
     // Recursion stops if displayed board is already revealed at location
-    if (displayBoard[rowIndex][colIndex] != '#') {
+    if (game.displayBoard[rowIndex][colIndex] != '#') {
         return;
     }
     // Reveal Cell at user selected location
-    displayBoard[rowIndex][colIndex] = hiddenBoard[rowIndex][colIndex];
+    game.displayBoard[rowIndex][colIndex] = game.hiddenBoard[rowIndex][colIndex];
 
     // Reveal all 8 surrounding cells and repeat for any revealed 0 cells.
-    if (hiddenBoard[rowIndex][colIndex] == '0') {
-        RevealCell(displayBoard, hiddenBoard, rowIndex - 1, colIndex);
-        RevealCell(displayBoard, hiddenBoard, rowIndex + 1, colIndex);
-        RevealCell(displayBoard, hiddenBoard, rowIndex, colIndex - 1);
-        RevealCell(displayBoard, hiddenBoard, rowIndex, colIndex + 1);
-        RevealCell(displayBoard, hiddenBoard, rowIndex - 1, colIndex - 1);
-        RevealCell(displayBoard, hiddenBoard, rowIndex - 1, colIndex + 1);
-        RevealCell(displayBoard, hiddenBoard, rowIndex + 1, colIndex - 1);
-        RevealCell(displayBoard, hiddenBoard, rowIndex + 1, colIndex + 1);
-    } 
+    if (game.hiddenBoard[rowIndex][colIndex] == '0') {
+        RevealCell(game, rowIndex - 1, colIndex);
+        RevealCell(game, rowIndex + 1, colIndex);
+        RevealCell(game, rowIndex, colIndex - 1);
+        RevealCell(game, rowIndex, colIndex + 1);
+        RevealCell(game, rowIndex - 1, colIndex - 1);
+        RevealCell(game, rowIndex - 1, colIndex + 1);
+        RevealCell(game, rowIndex + 1, colIndex - 1);
+        RevealCell(game, rowIndex + 1, colIndex + 1);
+    }
 }
 
-string GetValidInput() {
+string GetValidInput(int dim) {
     string userInput;
     bool validInput = false;
 
     while (!validInput) {
         cout << "Enter a cell (^ to flag): ";
         cin >> userInput;
-        
-        string addFlag = userInput;
-        string userCell = userInput;
 
-        //Checks for flag input and passes the coordinates to next check
-        if (addFlag.size() == 3 && addFlag[0] == '^') {
-            userCell = addFlag.substr(1);
+        string rawInput = userInput;
+
+        if (rawInput[0] == '^') {
+            rawInput = rawInput.substr(1);
         }
-
-        // Check for valid cell input
-        if (userCell.size() == 2 && 
-            userCell[0] >= 'A' && userCell[0] < 'A' + SML && 
-            userCell[1] > '0' && userCell[1] <= '0' + SML) {
+        if (rawInput.size() == 2 || rawInput.size() == 3) {
+            bool validRow = rawInput[0] >= 'A' && rawInput[0] < 'A' + dim;
+            bool validCol = rawInput[1] >= '0' && rawInput[1] < '0' + 9;
+            if (rawInput.size() == 3) {
+                validCol = validCol && rawInput[2] >= '0' && rawInput[2] <= '0' + 9;
+            } 
+            if (validRow && validCol) {
                 validInput = true;
-        }
-        else {
-            cin.clear();
-            cin.ignore(1000, '\n');
-            cout << "Invalid input. Please try again.\n";
+            }
+            else {
+                cin.clear();
+                cin.ignore(1000, '\n');
+                cout << "Invalid input. Please try again.\n";
+            }
         }
     }
 
@@ -231,72 +226,78 @@ string GetValidInput() {
 
 }
 
-void ToggleFlag(char displayBoard[SML][SML], int row, int col) {
-    if (displayBoard[row][col] == '#') {
-        displayBoard[row][col] = 'F';
+void ToggleFlag(Board& game, int row, int col) {
+    if (game.displayBoard[row][col] == '#') {
+        game.displayBoard[row][col] = 'F';
     }
-    else if (displayBoard[row][col] == 'F') {
-        displayBoard[row][col] = '#';
+    else if (game.displayBoard[row][col] == 'F') {
+        game.displayBoard[row][col] = '#';
     }
 }
 
-void PlayerTurn(char displayBoard[SML][SML], char hiddenBoard [SML][SML], int& rowIndex, int& colIndex, bool prettyMod, bool& isFirstTurn) {
+void PlayerTurn(Board& game, int& rowIndex, int& colIndex, bool prettyMod, bool& isFirstTurn) {
     char userRow;
     int userCol;
     bool addFlag = false;
 
     do { // Flagging does not consume a player turn
-        string userInput = GetValidInput();
+        string userInput = GetValidInput(game.dim);
         addFlag = false;
 
-        if (userInput.size() == 3) {
+        if (userInput[0] == '^') {
             addFlag = true;
             userInput = userInput.substr(1);
         }
-        
+
         userRow = userInput.at(0);
-        userCol = userInput.at(1);
+        if (userInput.size() == 2) {
+            userCol = userInput.at(1) - '0';
+        }
+        else if (userInput.size() == 3) {
+            // Convert two character string to int
+            userCol = (userInput[1] - '0') * 10 + (userInput[2] - '0');
+        }
 
         rowIndex = char(userRow - 'A'); // Char val -> user intended row val
-        colIndex = userCol - '1'; // Char val -> user intended col val
-        
+        colIndex = userCol - 1; // Char val -> user intended col val
+
         if (addFlag) {
-            ToggleFlag(displayBoard, rowIndex, colIndex);
-            PrintBoard(displayBoard, prettyMod);
-        } 
+            ToggleFlag(game, rowIndex, colIndex);
+            PrintBoard(game, prettyMod);
+        }
         else {
             if (isFirstTurn) { // Loop Flag to prevent first turn loss
-                DeployMines(hiddenBoard, rowIndex, colIndex);
-                GetCellVal(hiddenBoard);
-                RevealCell(displayBoard, hiddenBoard, rowIndex, colIndex);
+                DeployMines(game, rowIndex, colIndex);
+                GetCellVal(game);
+                RevealCell(game, rowIndex, colIndex);
                 isFirstTurn = false;
             }
             else {
-                RevealCell(displayBoard, hiddenBoard, rowIndex, colIndex);
+                RevealCell(game, rowIndex, colIndex);
             }
         }
     } while (addFlag);
 }
 
 // Shows mine location on display grid at loss
-void RevealMines(char displayBoard[SML][SML], char hiddenBoard[SML][SML], bool prettyMod) {
-    for (int r = 0; r < SML; r++) {
-        for (int c = 0; c < SML; c++) {
-            if (hiddenBoard[r][c] == '*') {
-                displayBoard[r][c] = hiddenBoard[r][c];
+void RevealMines(Board& game, bool prettyMod) {
+    for (int r = 0; r < game.dim; r++) {
+        for (int c = 0; c < game.dim; c++) {
+            if (game.hiddenBoard[r][c] == '*') {
+                game.displayBoard[r][c] = game.hiddenBoard[r][c];
             }
         }
     }
-    PrintBoard(displayBoard, prettyMod);
+    PrintBoard(game, prettyMod);
 }
 
-bool CheckWin(char displayBoard[SML][SML], char hiddenBoard[SML][SML]) {
+bool CheckWin(const Board& game) {
     bool winFound = true;
 
-    for (int r = 0; r < SML; r++) {
-        for (int c = 0; c < SML; c++) {
-            bool isMine = hiddenBoard[r][c] == '*';
-            bool isHidden = displayBoard[r][c] == '#' || displayBoard[r][c] == 'F';
+    for (int r = 0; r < game.dim; r++) {
+        for (int c = 0; c < game.dim; c++) {
+            bool isMine = game.hiddenBoard[r][c] == '*';
+            bool isHidden = game.displayBoard[r][c] == '#' || game.displayBoard[r][c] == 'F';
 
             if (!isMine && isHidden) {
                 winFound = false;
@@ -304,61 +305,73 @@ bool CheckWin(char displayBoard[SML][SML], char hiddenBoard[SML][SML]) {
         }
     }
 
-    return winFound; 
+    return winFound;
 }
 
-void PlayGame(char displayBoard[SML][SML], char hiddenBoard[SML][SML], bool prettyMod) {
+void PlayGame(Board& game, bool prettyMod) {
     int rowIndex;
     int colIndex;
-    bool gameOver = false; // NOTE: need to build CheckWin function
+    bool gameOver = false;
     bool isFirstTurn = true;
 
     while (!gameOver) {
-        PrintBoard(displayBoard, prettyMod);
-        PlayerTurn(displayBoard, hiddenBoard, rowIndex, colIndex, prettyMod, isFirstTurn);
+        PrintBoard(game, prettyMod);
+        PlayerTurn(game, rowIndex, colIndex, prettyMod, isFirstTurn);
 
         // Win & Lose Conditions
-        if (displayBoard[rowIndex][colIndex] == '*') {
+        if (game.displayBoard[rowIndex][colIndex] == '*') {
             gameOver = true;
-            RevealMines(displayBoard, hiddenBoard, prettyMod);
+            RevealMines(game, prettyMod);
             cout << "*BOOM* You Lose. Hit a mine at " << char('A' + rowIndex) << colIndex + 1 << ".\n";
             break;
         }
-        gameOver = CheckWin(displayBoard, hiddenBoard);
+        gameOver = CheckWin(game);
         if (gameOver) {
-            PrintBoard(displayBoard, prettyMod);
+            PrintBoard(game, prettyMod);
             cout << "You WIN!";
             break;
         }
-    }       
+    }
 }
 
 int main() {
     srand(time(0)); // for mine placement
-    char displayGrid[SML][SML];
-    char hiddenGrid[SML][SML];
 
     cout << TITLE;
     bool prettyMod = EnablePrettyMod();
-    bool loopGame = LaunchMenu() != 0;
-    
-    while (loopGame) {
+
+    Board game;
+    int gameMode = LaunchMenu();
+
+    while (gameMode != 0) {
+        if (gameMode == 1) {
+            game.dim = SML;
+            game.numMines = MINES_SML;
+        }
+        else if (gameMode == 2) {
+            game.dim = MED;
+            game.numMines = MINES_MED;
+        }
+        else if (gameMode == 3) {
+            game.dim = LRG;
+            game.numMines = MINES_LRG;
+        }
         // Initialize Boards
-        for (int r = 0; r < SML; r++) {
-            for (int c = 0; c < SML; c++) {
-                displayGrid[r][c] = '#';
+        for (int r = 0; r < game.dim; r++) {
+            for (int c = 0; c < game.dim; c++) {
+                game.displayBoard[r][c] = '#';
             }
         }
-        for (int r = 0; r < SML; r++) {
-            for (int c = 0; c < SML; c++) {
-                hiddenGrid[r][c] = '0';
+        for (int r = 0; r < game.dim; r++) {
+            for (int c = 0; c < game.dim; c++) {
+                game.hiddenBoard[r][c] = '0';
             }
         }
 
-        PlayGame(displayGrid, hiddenGrid, prettyMod);
-        loopGame = LaunchMenu();
+        PlayGame(game, prettyMod);
+        gameMode = LaunchMenu();
     }
-    
+
     return 0;
 
 }
