@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <string>
 #include <iomanip>
+#include <cctype>
 
 using namespace std;
 
@@ -84,7 +85,15 @@ void PrintBoard(const Board& game, bool prettyMod) {
     cout << endl;
     cout << "  ";
     for (int n = 0; n < game.dim; n++) {
-        cout << setw(2) << n + 1 << " ";
+        if (n <= 7) {
+            cout << n + 1 << " ";
+        }
+        else if (n == 8)
+            cout << n + 1;
+        else {
+            cout << n + 1;
+        }
+
     }
     cout << endl;
 
@@ -92,19 +101,19 @@ void PrintBoard(const Board& game, bool prettyMod) {
         cout << char('A' + r) << " ";
         for (int c = 0; c < game.dim; c++) {
             if (game.displayBoard[r][c] == '*') {
-                cout << (prettyMod ? " ✶ " : " * ");
+                cout << (prettyMod ? "✶ " : "* ");
             }
             else if (game.displayBoard[r][c] == '0') {
-                cout << "   ";
+                cout << "  ";
             }
             else if (game.displayBoard[r][c] == 'F') {
-                cout << (prettyMod ? " ⚑ " : " F ");
+                cout << (prettyMod ? "⚑ " : "F ");
             }
             else if (game.displayBoard[r][c] >= '1' && game.displayBoard[r][c] <= '8') {
-                cout << " " << game.displayBoard[r][c] << " ";
+                cout << game.displayBoard[r][c] << " ";
             }
             else if (game.displayBoard[r][c] == '#') {
-                cout << (prettyMod ? " ■ " : " # ");
+                cout << (prettyMod ? "■ " : "# ");
             }
         }
         cout << "\n";
@@ -199,6 +208,11 @@ string GetValidInput(int dim) {
     while (!validInput) {
         cout << "Enter a cell (^ to flag): ";
         cin >> userInput;
+
+        // Allows lowercase input validation to pass
+        for (int i = 0; i < userInput.size(); i++) {
+            userInput[i] = toupper(userInput[i]);
+        }
 
         string rawInput = userInput;
 
