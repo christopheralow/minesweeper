@@ -53,7 +53,7 @@ Density Difficulty Scale (from minesweeperblast.com):
 10-15%: Casual, most logical flow
 15-20%: Challenging, requires pattern recognition
 20-25%: Expert, high probability constraints
-25+%: Extreme, frequent guuessing required
+25+%: Extreme, frequent guessing required
 
 This game will follow classic curves with an added challenge mode
 
