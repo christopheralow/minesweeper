@@ -6,7 +6,7 @@ a.out
 main
 
 # Compiled binary
-connect4
+minesweeper
 
 # Build folders
 build/
