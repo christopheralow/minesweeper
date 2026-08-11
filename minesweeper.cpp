@@ -31,7 +31,7 @@ const int MINES_SML = 10;
 const int MINES_MED = 40;
 const int MINES_LRG = 101;
 
-// Boards declared at LRG X LRG, dim controls utilized grid dimensions
+// Boards declared at LRG x LRG, dim controls utilized grid dimensions
 struct Board {
     char displayBoard[LRG][LRG];
     char hiddenBoard[LRG][LRG];
@@ -60,14 +60,14 @@ bool EnablePrettyMod() {
     bool prettyMod;
 
     cout << endl;
-    cout << "Enable improved graphics? (warning: can cause issues for certain OS): ";
+    cout << "Enable improved graphics?: ";
     cin >> enableMod;
 
     while (cin.fail() || enableMod != 'Y' && enableMod != 'y'
                       && enableMod != 'N' && enableMod != 'n') {
         cin.clear();
         cin.ignore(1000, '\n');
-        cout << "Please enter \"Y\" or \"N\": " << endl;
+        cout << "Please enter 'Y' or 'N': " << endl;
         cin >> enableMod;
     }
 
@@ -83,22 +83,30 @@ bool EnablePrettyMod() {
 
 void PrintBoard(const Board& game, bool prettyMod) {
     cout << endl;
+    // Column Header - Tens row
+    if (game.dim >= 10) {
+        cout << "  ";
+        for (int n = 0; n < game.dim; n++) {
+            int colNum = n + 1;
+            if (colNum >= 10) {
+                cout << colNum / 10 << " ";
+            }
+            else {
+                cout << "  ";
+            }
+        }
+        cout << endl;
+    }
+    // Column Header - Ones row
     cout << "  ";
     for (int n = 0; n < game.dim; n++) {
-        if (n <= 7) {
-            cout << n + 1 << " ";
-        }
-        else if (n == 8)
-            cout << n + 1;
-        else {
-            cout << n + 1;
-        }
-
+        cout << (n + 1) % 10 << " ";
     }
     cout << endl;
 
+    // Board (with PrettyMod toggle)
     for (int r = 0; r < game.dim; r++) {
-        cout << char('A' + r) << " ";
+        cout << char('A' + r) << " "; // Row Header
         for (int c = 0; c < game.dim; c++) {
             if (game.displayBoard[r][c] == '*') {
                 cout << (prettyMod ? "✶ " : "* ");
@@ -221,9 +229,9 @@ string GetValidInput(int dim) {
         }
         if (rawInput.size() == 2 || rawInput.size() == 3) {
             bool validRow = rawInput[0] >= 'A' && rawInput[0] < 'A' + dim;
-            bool validCol = rawInput[1] >= '0' && rawInput[1] < '0' + 9;
+            bool validCol = rawInput[1] >= '0' && rawInput[1] <= '9';
             if (rawInput.size() == 3) {
-                validCol = validCol && rawInput[2] >= '0' && rawInput[2] <= '0' + 9;
+                validCol = validCol && rawInput[2] >= '0' && rawInput[2] <= '9';
             } 
             if (validRow && validCol) {
                 validInput = true;
@@ -272,8 +280,8 @@ void PlayerTurn(Board& game, int& rowIndex, int& colIndex, bool prettyMod, bool&
             userCol = (userInput[1] - '0') * 10 + (userInput[2] - '0');
         }
 
-        rowIndex = char(userRow - 'A'); // Char val -> user intended row val
-        colIndex = userCol - 1; // Char val -> user intended col val
+        rowIndex = userRow - 'A'; // Char val -> user intended row val
+        colIndex = userCol - 1; // Int val -> user intended col val
 
         if (addFlag) {
             ToggleFlag(game, rowIndex, colIndex);
