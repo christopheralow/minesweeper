@@ -5,8 +5,6 @@
 #include <iomanip>
 #include <cctype>
 
-using namespace std;
-
 inline const char* TITLE = R"(
  __  __  ___  _  _  ___   ___ __      __ ___  ___  ___  ___  ___
 |  \/  ||_ _|| \| || __| / __|\ \    / /| __|| __|| _ \| __|| _ \
@@ -31,6 +29,14 @@ const int MINES_SML = 10;
 const int MINES_MED = 40;
 const int MINES_LRG = 101;
 
+// Boards declared at LRG x LRG, dim controls utilized grid dimensions
+struct Board {
+    char displayBoard[LRG][LRG];
+    char hiddenBoard[LRG][LRG];
+    int dim;
+    int numMines;
+};
+
 //Menu & Settings
 int LaunchMenu();
 bool EnablePrettyMod();
@@ -45,7 +51,7 @@ void PrintBoard(const Board& game, bool prettyMod);
 void RevealMines(Board& game, bool prettyMod);
 
 // Player Input
-string GetValidInput(int dim);
+std::string GetValidInput(int dim);
 void PlayerTurn(Board& game, int& rowIndex, int& colIndex, bool prettyMod, bool& isFirstTurn);
 
 // Game Logic
@@ -54,18 +60,10 @@ void RevealCell(Board& game, int rowIndex, int colIndex);
 void ToggleFlag(Board& game, int row, int col);
 bool CheckWin(const Board& game);
 
-// Boards declared at LRG x LRG, dim controls utilized grid dimensions
-struct Board {
-    char displayBoard[LRG][LRG];
-    char hiddenBoard[LRG][LRG];
-    int dim;
-    int numMines;
-};
-
 int main() {
     srand(time(0)); // for mine placement
 
-    cout << TITLE;
+    std::cout << TITLE;
     bool prettyMod = EnablePrettyMod();
 
     Board game;
@@ -105,14 +103,14 @@ int main() {
 int LaunchMenu() {
     int gameMode;
 
-    cout << MENU;
-    cin >> gameMode;
-    while (cin.fail() || gameMode != 0 && gameMode != 1
+    std::cout << MENU;
+    std::cin >> gameMode;
+    while (std::cin.fail() || gameMode != 0 && gameMode != 1
                       && gameMode != 2 && gameMode != 3) {
-        cin.clear();
-        cin.ignore(1000, '\n');
-        cout << "Select a valid game mode: ";
-        cin >> gameMode;
+        std::cin.clear();
+        std::cin.ignore(1000, '\n');
+        std::cout << "Select a valid game mode: ";
+        std::cin >> gameMode;
     }
     return gameMode;
 }
@@ -121,16 +119,16 @@ bool EnablePrettyMod() {
     char enableMod;
     bool prettyMod;
 
-    cout << endl;
-    cout << "Enable improved graphics?: ";
-    cin >> enableMod;
+    std::cout << std::endl;
+    std::cout << "Enable improved graphics?: ";
+    std::cin >> enableMod;
 
-    while (cin.fail() || enableMod != 'Y' && enableMod != 'y'
+    while (std::cin.fail() || enableMod != 'Y' && enableMod != 'y'
                       && enableMod != 'N' && enableMod != 'n') {
-        cin.clear();
-        cin.ignore(1000, '\n');
-        cout << "Please enter 'Y' or 'N': " << endl;
-        cin >> enableMod;
+        std::cin.clear();
+        std::cin.ignore(1000, '\n');
+        std::cout << "Please enter 'Y' or 'N': " << std::endl;
+        std::cin >> enableMod;
     }
 
     if (enableMod == 'Y' || enableMod == 'y') {
@@ -198,49 +196,49 @@ void GetCellVal(Board& game) {
 }
 
 void PrintBoard(const Board& game, bool prettyMod) {
-    cout << endl;
+    std::cout << std::endl;
     // Column Header - Tens row
     if (game.dim >= 10) {
-        cout << "  ";
+        std::cout << "  ";
         for (int n = 0; n < game.dim; n++) {
             int colNum = n + 1;
             if (colNum >= 10) {
-                cout << colNum / 10 << " ";
+                std::cout << colNum / 10 << " ";
             }
             else {
-                cout << "  ";
+                std::cout << "  ";
             }
         }
-        cout << endl;
+        std::cout << std::endl;
     }
     // Column Header - Ones row
-    cout << "  ";
+    std::cout << "  ";
     for (int n = 0; n < game.dim; n++) {
-        cout << (n + 1) % 10 << " ";
+        std::cout << (n + 1) % 10 << " ";
     }
-    cout << endl;
+    std::cout << std::endl;
 
     // Board (with PrettyMod toggle)
     for (int r = 0; r < game.dim; r++) {
-        cout << char('A' + r) << " "; // Row Header
+        std::cout << char('A' + r) << " "; // Row Header
         for (int c = 0; c < game.dim; c++) {
             if (game.displayBoard[r][c] == '*') {
-                cout << (prettyMod ? "✶ " : "* ");
+                std::cout << (prettyMod ? "✶ " : "* ");
             }
             else if (game.displayBoard[r][c] == '0') {
-                cout << "  ";
+                std::cout << "  ";
             }
             else if (game.displayBoard[r][c] == 'F') {
-                cout << (prettyMod ? "⚑ " : "F ");
+                std::cout << (prettyMod ? "⚑ " : "F ");
             }
             else if (game.displayBoard[r][c] >= '1' && game.displayBoard[r][c] <= '8') {
-                cout << game.displayBoard[r][c] << " ";
+                std::cout << game.displayBoard[r][c] << " ";
             }
             else if (game.displayBoard[r][c] == '#') {
-                cout << (prettyMod ? "■ " : "# ");
+                std::cout << (prettyMod ? "■ " : "# ");
             }
         }
-        cout << "\n";
+        std::cout << "\n";
     }
 }
 
@@ -256,20 +254,20 @@ void RevealMines(Board& game, bool prettyMod) {
     PrintBoard(game, prettyMod);
 }
 
-string GetValidInput(int dim) {
-    string userInput;
+std::string GetValidInput(int dim) {
+    std::string userInput;
     bool validInput = false;
 
     while (!validInput) {
-        cout << "Enter a cell (^ to flag): ";
-        cin >> userInput;
+        std::cout << "Enter a cell (^ to flag): ";
+        std::cin >> userInput;
 
         // Allows lowercase input validation to pass
         for (int i = 0; i < userInput.size(); i++) {
             userInput[i] = toupper(userInput[i]);
         }
 
-        string rawInput = userInput;
+        std::string rawInput = userInput;
 
         if (rawInput[0] == '^') {
             rawInput = rawInput.substr(1);
@@ -284,9 +282,9 @@ string GetValidInput(int dim) {
                 validInput = true;
             }
             else {
-                cin.clear();
-                cin.ignore(1000, '\n');
-                cout << "Invalid input. Please try again.\n";
+                std::cin.clear();
+                std::cin.ignore(1000, '\n');
+                std::cout << "Invalid input. Please try again.\n";
             }
         }
     }
@@ -299,7 +297,7 @@ void PlayerTurn(Board& game, int& rowIndex, int& colIndex, bool prettyMod, bool&
     bool addFlag = false;
 
     do { // Flagging does not consume a player turn
-        string userInput = GetValidInput(game.dim);
+        std::string userInput = GetValidInput(game.dim);
         addFlag = false;
 
         if (userInput[0] == '^') {
@@ -351,13 +349,13 @@ void PlayGame(Board& game, bool prettyMod) {
         if (game.displayBoard[rowIndex][colIndex] == '*') {
             gameOver = true;
             RevealMines(game, prettyMod);
-            cout << "*BOOM* You Lose. Hit a mine at " << char('A' + rowIndex) << colIndex + 1 << ".\n";
+            std::cout << "*BOOM* You Lose. Hit a mine at " << char('A' + rowIndex) << colIndex + 1 << ".\n";
             break;
         }
         gameOver = CheckWin(game);
         if (gameOver) {
             PrintBoard(game, prettyMod);
-            cout << "You WIN!";
+            std::cout << "You WIN!";
             break;
         }
     }
