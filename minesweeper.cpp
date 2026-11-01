@@ -31,6 +31,29 @@ const int MINES_SML = 10;
 const int MINES_MED = 40;
 const int MINES_LRG = 101;
 
+//Menu & Settings
+int LaunchMenu();
+bool EnablePrettyMod();
+
+// Board Setup
+void DeployMines(Board& game, int safeRow, int safeCol);
+bool IsMine(const Board& game, int row, int col);
+void GetCellVal(Board& game);
+
+// Display
+void PrintBoard(const Board& game, bool prettyMod);
+void RevealMines(Board& game, bool prettyMod);
+
+// Player Input
+string GetValidInput(int dim);
+void PlayerTurn(Board& game, int& rowIndex, int& colIndex, bool prettyMod, bool& isFirstTurn);
+
+// Game Logic
+void PlayGame(Board& game, bool prettyMod);
+void RevealCell(Board& game, int rowIndex, int colIndex);
+void ToggleFlag(Board& game, int row, int col);
+bool CheckWin(const Board& game);
+
 // Boards declared at LRG x LRG, dim controls utilized grid dimensions
 struct Board {
     char displayBoard[LRG][LRG];
