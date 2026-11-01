@@ -62,6 +62,46 @@ struct Board {
     int numMines;
 };
 
+int main() {
+    srand(time(0)); // for mine placement
+
+    cout << TITLE;
+    bool prettyMod = EnablePrettyMod();
+
+    Board game;
+    int gameMode = LaunchMenu();
+
+    while (gameMode != 0) {
+        if (gameMode == 1) {
+            game.dim = SML;
+            game.numMines = MINES_SML;
+        }
+        else if (gameMode == 2) {
+            game.dim = MED;
+            game.numMines = MINES_MED;
+        }
+        else if (gameMode == 3) {
+            game.dim = LRG;
+            game.numMines = MINES_LRG;
+        }
+        // Initialize Boards
+        for (int r = 0; r < game.dim; r++) {
+            for (int c = 0; c < game.dim; c++) {
+                game.displayBoard[r][c] = '#';
+            }
+        }
+        for (int r = 0; r < game.dim; r++) {
+            for (int c = 0; c < game.dim; c++) {
+                game.hiddenBoard[r][c] = '0';
+            }
+        }
+
+        PlayGame(game, prettyMod);
+        gameMode = LaunchMenu();
+    }
+    return 0;
+}
+
 int LaunchMenu() {
     int gameMode;
 
@@ -74,7 +114,6 @@ int LaunchMenu() {
         cout << "Select a valid game mode: ";
         cin >> gameMode;
     }
-
     return gameMode;
 }
 
@@ -100,8 +139,62 @@ bool EnablePrettyMod() {
     else {
         prettyMod = false;
     }
-
     return prettyMod;
+}
+
+// Randomly assigns mines to actual Grid, first pick has safezone
+void DeployMines(Board& game, int safeRow, int safeCol) {
+    int numMinesPlaced = 0;
+
+    while (numMinesPlaced < game.numMines) {
+        // Select a random row and column
+        int row = rand() % game.dim;
+        int col = rand() % game.dim;
+
+        // Safe Zone starts out with flood fill on first turn
+        bool inSafeZone = row >= safeRow - 1 && row <= safeRow + 1 &&
+                           col >= safeCol - 1 && col <= safeCol + 1;
+
+        // Check cell status and drop a mine
+        if (game.hiddenBoard[row][col] != '*' && !inSafeZone) {
+            game.hiddenBoard[row][col] = '*';
+            numMinesPlaced++;
+        }
+    }
+}
+
+// For use inside GetCellVal to check for mines within the area of the actual Grid
+bool IsMine(const Board& game, int row, int col) {
+    bool mineFound = false;
+
+    // Prevent checking outside range of board
+    if (row < 0 || row >= game.dim || col < 0 || col >= game.dim) {
+        mineFound = false;
+    }
+    else if (game.hiddenBoard[row][col] == '*') {
+        mineFound = true;
+    }
+    return mineFound;
+}
+
+// Determines value of cells based on neighboring mines and assigns value on actual Grid
+void GetCellVal(Board& game) {
+    for (int r = 0; r < game.dim; r++) {
+        for (int c = 0; c < game.dim; c++) {
+            // Skip '*' cells
+            if (game.hiddenBoard[r][c] == '*') {
+                continue;
+            }
+            // Sum of 8 bool statments makes cell value
+            int cellVal = IsMine(game, r - 1, c - 1) + IsMine(game, r - 1, c + 0)
+                        + IsMine(game, r - 1, c + 1) + IsMine(game, r + 0, c - 1)
+                        + IsMine(game, r + 0, c + 1) + IsMine(game, r + 1, c - 1)
+                        + IsMine(game, r + 1, c - 0) + IsMine(game, r + 1, c + 1);
+
+            // Int -> Char
+            game.hiddenBoard[r][c] = char('0' + cellVal);
+        }
+    }
 }
 
 void PrintBoard(const Board& game, bool prettyMod) {
@@ -151,85 +244,16 @@ void PrintBoard(const Board& game, bool prettyMod) {
     }
 }
 
-// Randomly assigns mines to actual Grid, first pick has safezone
-void DeployMines(Board& game, int safeRow, int safeCol) {
-    int numMinesPlaced = 0;
-
-    while (numMinesPlaced < game.numMines) {
-        // Select a random row and column
-        int row = rand() % game.dim;
-        int col = rand() % game.dim;
-
-        // Safe Zone starts out with flood fill on first turn
-        bool inSafeZone = row >= safeRow - 1 && row <= safeRow + 1 &&
-                           col >= safeCol - 1 && col <= safeCol + 1;
-
-        // Check cell status and drop a mine
-        if (game.hiddenBoard[row][col] != '*' && !inSafeZone) {
-            game.hiddenBoard[row][col] = '*';
-            numMinesPlaced++;
-        }
-    }
-}
-
-// For use inside GetCellVal to check for mines within the area of the actual Grid
-bool IsMine(const Board& game, int row, int col) {
-    bool mineFound = false;
-
-    // Prevent checking outside range of board
-    if (row < 0 || row >= game.dim || col < 0 || col >= game.dim) {
-        mineFound = false;
-    }
-    else if (game.hiddenBoard[row][col] == '*') {
-        mineFound = true;
-    }
-
-    return mineFound;
-}
-
-// Determines value of cells based on neighboring mines and assigns value on actual Grid
-void GetCellVal(Board& game) {
+// Shows mine location on display grid at loss
+void RevealMines(Board& game, bool prettyMod) {
     for (int r = 0; r < game.dim; r++) {
         for (int c = 0; c < game.dim; c++) {
-            // Skip '*' cells
             if (game.hiddenBoard[r][c] == '*') {
-                continue;
+                game.displayBoard[r][c] = game.hiddenBoard[r][c];
             }
-            // Sum of 8 bool statments makes cell value
-            int cellVal = IsMine(game, r - 1, c - 1) + IsMine(game, r - 1, c + 0)
-                        + IsMine(game, r - 1, c + 1) + IsMine(game, r + 0, c - 1)
-                        + IsMine(game, r + 0, c + 1) + IsMine(game, r + 1, c - 1)
-                        + IsMine(game, r + 1, c - 0) + IsMine(game, r + 1, c + 1);
-
-            // Int -> Char
-            game.hiddenBoard[r][c] = char('0' + cellVal);
         }
     }
-}
-
-void RevealCell(Board& game, int rowIndex, int colIndex) {
-    // Prevent checking outside area of actual grid
-    if (rowIndex < 0 || rowIndex >= game.dim || colIndex < 0 || colIndex >= game.dim) {
-        return;
-    }
-    // Recursion stops if displayed board is already revealed at location
-    if (game.displayBoard[rowIndex][colIndex] != '#') {
-        return;
-    }
-    // Reveal Cell at user selected location
-    game.displayBoard[rowIndex][colIndex] = game.hiddenBoard[rowIndex][colIndex];
-
-    // Reveal all 8 surrounding cells and repeat for any revealed 0 cells.
-    if (game.hiddenBoard[rowIndex][colIndex] == '0') {
-        RevealCell(game, rowIndex - 1, colIndex);
-        RevealCell(game, rowIndex + 1, colIndex);
-        RevealCell(game, rowIndex, colIndex - 1);
-        RevealCell(game, rowIndex, colIndex + 1);
-        RevealCell(game, rowIndex - 1, colIndex - 1);
-        RevealCell(game, rowIndex - 1, colIndex + 1);
-        RevealCell(game, rowIndex + 1, colIndex - 1);
-        RevealCell(game, rowIndex + 1, colIndex + 1);
-    }
+    PrintBoard(game, prettyMod);
 }
 
 string GetValidInput(int dim) {
@@ -266,18 +290,7 @@ string GetValidInput(int dim) {
             }
         }
     }
-
     return userInput;
-
-}
-
-void ToggleFlag(Board& game, int row, int col) {
-    if (game.displayBoard[row][col] == '#') {
-        game.displayBoard[row][col] = 'F';
-    }
-    else if (game.displayBoard[row][col] == 'F') {
-        game.displayBoard[row][col] = '#';
-    }
 }
 
 void PlayerTurn(Board& game, int& rowIndex, int& colIndex, bool prettyMod, bool& isFirstTurn) {
@@ -324,35 +337,6 @@ void PlayerTurn(Board& game, int& rowIndex, int& colIndex, bool prettyMod, bool&
     } while (addFlag);
 }
 
-// Shows mine location on display grid at loss
-void RevealMines(Board& game, bool prettyMod) {
-    for (int r = 0; r < game.dim; r++) {
-        for (int c = 0; c < game.dim; c++) {
-            if (game.hiddenBoard[r][c] == '*') {
-                game.displayBoard[r][c] = game.hiddenBoard[r][c];
-            }
-        }
-    }
-    PrintBoard(game, prettyMod);
-}
-
-bool CheckWin(const Board& game) {
-    bool winFound = true;
-
-    for (int r = 0; r < game.dim; r++) {
-        for (int c = 0; c < game.dim; c++) {
-            bool isMine = game.hiddenBoard[r][c] == '*';
-            bool isHidden = game.displayBoard[r][c] == '#' || game.displayBoard[r][c] == 'F';
-
-            if (!isMine && isHidden) {
-                winFound = false;
-            }
-        }
-    }
-
-    return winFound;
-}
-
 void PlayGame(Board& game, bool prettyMod) {
     int rowIndex;
     int colIndex;
@@ -379,44 +363,52 @@ void PlayGame(Board& game, bool prettyMod) {
     }
 }
 
-int main() {
-    srand(time(0)); // for mine placement
-
-    cout << TITLE;
-    bool prettyMod = EnablePrettyMod();
-
-    Board game;
-    int gameMode = LaunchMenu();
-
-    while (gameMode != 0) {
-        if (gameMode == 1) {
-            game.dim = SML;
-            game.numMines = MINES_SML;
-        }
-        else if (gameMode == 2) {
-            game.dim = MED;
-            game.numMines = MINES_MED;
-        }
-        else if (gameMode == 3) {
-            game.dim = LRG;
-            game.numMines = MINES_LRG;
-        }
-        // Initialize Boards
-        for (int r = 0; r < game.dim; r++) {
-            for (int c = 0; c < game.dim; c++) {
-                game.displayBoard[r][c] = '#';
-            }
-        }
-        for (int r = 0; r < game.dim; r++) {
-            for (int c = 0; c < game.dim; c++) {
-                game.hiddenBoard[r][c] = '0';
-            }
-        }
-
-        PlayGame(game, prettyMod);
-        gameMode = LaunchMenu();
+void RevealCell(Board& game, int rowIndex, int colIndex) {
+    // Prevent checking outside area of actual grid
+    if (rowIndex < 0 || rowIndex >= game.dim || colIndex < 0 || colIndex >= game.dim) {
+        return;
     }
+    // Recursion stops if displayed board is already revealed at location
+    if (game.displayBoard[rowIndex][colIndex] != '#') {
+        return;
+    }
+    // Reveal Cell at user selected location
+    game.displayBoard[rowIndex][colIndex] = game.hiddenBoard[rowIndex][colIndex];
 
-    return 0;
+    // Reveal all 8 surrounding cells and repeat for any revealed 0 cells.
+    if (game.hiddenBoard[rowIndex][colIndex] == '0') {
+        RevealCell(game, rowIndex - 1, colIndex);
+        RevealCell(game, rowIndex + 1, colIndex);
+        RevealCell(game, rowIndex, colIndex - 1);
+        RevealCell(game, rowIndex, colIndex + 1);
+        RevealCell(game, rowIndex - 1, colIndex - 1);
+        RevealCell(game, rowIndex - 1, colIndex + 1);
+        RevealCell(game, rowIndex + 1, colIndex - 1);
+        RevealCell(game, rowIndex + 1, colIndex + 1);
+    }
+}
 
+void ToggleFlag(Board& game, int row, int col) {
+    if (game.displayBoard[row][col] == '#') {
+        game.displayBoard[row][col] = 'F';
+    }
+    else if (game.displayBoard[row][col] == 'F') {
+        game.displayBoard[row][col] = '#';
+    }
+}
+
+bool CheckWin(const Board& game) {
+    bool winFound = true;
+
+    for (int r = 0; r < game.dim; r++) {
+        for (int c = 0; c < game.dim; c++) {
+            bool isMine = game.hiddenBoard[r][c] == '*';
+            bool isHidden = game.displayBoard[r][c] == '#' || game.displayBoard[r][c] == 'F';
+
+            if (!isMine && isHidden) {
+                winFound = false;
+            }
+        }
+    }
+    return winFound;
 }
