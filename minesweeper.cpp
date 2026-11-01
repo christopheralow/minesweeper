@@ -106,7 +106,7 @@ int LaunchMenu() {
     std::cout << MENU;
     std::cin >> gameMode;
     while (std::cin.fail() || gameMode != 0 && gameMode != 1
-                      && gameMode != 2 && gameMode != 3) {
+                           && gameMode != 2 && gameMode != 3) {
         std::cin.clear();
         std::cin.ignore(1000, '\n');
         std::cout << "Select a valid game mode: ";
@@ -124,7 +124,7 @@ bool EnablePrettyMod() {
     std::cin >> enableMod;
 
     while (std::cin.fail() || enableMod != 'Y' && enableMod != 'y'
-                      && enableMod != 'N' && enableMod != 'n') {
+                           && enableMod != 'N' && enableMod != 'n') {
         std::cin.clear();
         std::cin.ignore(1000, '\n');
         std::cout << "Please enter 'Y' or 'N': " << std::endl;
@@ -151,7 +151,7 @@ void DeployMines(Board& game, int safeRow, int safeCol) {
 
         // Safe Zone starts out with flood fill on first turn
         bool inSafeZone = row >= safeRow - 1 && row <= safeRow + 1 &&
-                           col >= safeCol - 1 && col <= safeCol + 1;
+                          col >= safeCol - 1 && col <= safeCol + 1;
 
         // Check cell status and drop a mine
         if (game.hiddenBoard[row][col] != '*' && !inSafeZone) {
@@ -349,7 +349,10 @@ void PlayGame(Board& game, bool prettyMod) {
         if (game.displayBoard[rowIndex][colIndex] == '*') {
             gameOver = true;
             RevealMines(game, prettyMod);
-            std::cout << "*BOOM* You Lose. Hit a mine at " << char('A' + rowIndex) << colIndex + 1 << ".\n";
+            std::cout << "*BOOM* You Lose. Hit a mine at " 
+                      << char('A' + rowIndex) 
+                      << colIndex + 1 
+                      << ".\n";
             break;
         }
         gameOver = CheckWin(game);
